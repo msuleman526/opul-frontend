@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -267,8 +268,13 @@
     }
 
     @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
     }
 
     .no-offers {
@@ -283,8 +289,15 @@
     }
 
     @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.7; }
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.7;
+      }
     }
 
     .offer-badge {
@@ -301,8 +314,15 @@
     }
 
     @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-5px); }
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-5px);
+      }
     }
 
     .refresh-button {
@@ -326,10 +346,11 @@
   <!-- Socket.IO -->
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 </head>
+
 <body>
   <div class="container">
     <div class="logo">OPUL</div>
-    
+
     <a href="Index.html" class="back-button">← Back to Home</a>
 
     <div class="header">
@@ -349,7 +370,8 @@
       <h3 style="margin-top: 0;">⏰ Driver Selection Timer</h3>
       <div class="timer-display" id="timerDisplay">3:00</div>
       <p>You have <strong>3 minutes</strong> to select a driver</p>
-      <p class="timer-warning" id="timerWarning" style="display: none;">⚠️ Time is running out! Select a driver soon or your credit will be refunded.</p>
+      <p class="timer-warning" id="timerWarning" style="display: none;">⚠️ Time is running out! Select a driver soon or
+        your credit will be refunded.</p>
     </div>
 
     <div class="status-message waiting" id="statusMessage">
@@ -374,7 +396,9 @@
         </button>
       </div>
       <div style="margin-top: 20px;">
-        <p style="font-size: 14px; opacity: 0.7;">Already paid? <button style="background: none; border: 1px solid #00f0ff; color: #00f0ff; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px;" onclick="checkPaymentAndRefresh()">Check Payment Status</button></p>
+        <p style="font-size: 14px; opacity: 0.7;">Already paid? <button
+            style="background: none; border: 1px solid #00f0ff; color: #00f0ff; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px;"
+            onclick="checkPaymentAndRefresh()">Check Payment Status</button></p>
       </div>
     </div>
 
@@ -396,8 +420,8 @@
 
   <script>
     // Configuration
-    const API_BASE = 'http://localhost:5000/api';
-    
+    const API_BASE = 'https://opul-backend-qt2a.onrender.com/api';
+
     // Get URL parameters
     const urlParams = new URLSearchParams(window.location.search);
     const requestId = urlParams.get('requestId');
@@ -414,7 +438,7 @@
     let isTimerActive = false;
 
     // Initialize page
-    window.addEventListener('load', async function() {
+    window.addEventListener('load', async function () {
       if (!requestId) {
         showStatusMessage('Invalid request. Please start from the ride request page.', 'error');
         setTimeout(() => window.location.href = 'Index.html', 3000);
@@ -434,7 +458,7 @@
     async function initializePage() {
       // Initialize Socket.IO connection
       try {
-        socket = io('http://localhost:5000');
+        socket = io('https://opul-backend-qt2a.onrender.com');
         setupSocketListeners();
       } catch (error) {
         console.warn('Socket.IO connection failed:', error);
@@ -442,10 +466,10 @@
 
       // Load ride details
       await loadRideDetails();
-      
+
       // Check user credits first to determine flow
       await checkUserCredits();
-      
+
       if (userCredits >= 1) {
         // User has credits - show driver offers directly with timer
         await loadDriverOffers();
@@ -456,7 +480,7 @@
         // User has zero credits - show payment options first
         showPaymentRequired();
       }
-      
+
       // Hide loading indicator
       document.getElementById('loadingIndicator').style.display = 'none';
     }
@@ -464,7 +488,7 @@
     async function initializePageAfterPayment() {
       // Initialize Socket.IO connection
       try {
-        socket = io('http://localhost:5000');
+        socket = io('https://opul-backend-qt2a.onrender.com');
         setupSocketListeners();
       } catch (error) {
         console.warn('Socket.IO connection failed:', error);
@@ -472,16 +496,16 @@
 
       // Load ride details
       await loadRideDetails();
-      
+
       // Give some time for payment to be processed in backend
       showStatusMessage('Payment completed! Refreshing your credit balance...', 'success');
-      
+
       // Wait 2 seconds, then refresh credits
       await new Promise(resolve => setTimeout(resolve, 2000));
-      
+
       // Force refresh credits (user just paid)
       await checkUserCredits();
-      
+
       if (userCredits >= 1) {
         // User has credits now - show driver offers with timer
         showStatusMessage('Credit updated! Loading driver offers...', 'success');
@@ -497,7 +521,7 @@
           showPaymentRequired();
         }, 3000);
       }
-      
+
       // Hide loading indicator
       document.getElementById('loadingIndicator').style.display = 'none';
     }
@@ -543,7 +567,7 @@
       try {
         const response = await fetch(`${API_BASE}/rides/${requestId}`);
         const data = await response.json();
-        
+
         if (data.success) {
           rideData = data.data;
           updateRideDisplay();
@@ -562,7 +586,7 @@
         const response = await fetch(`${API_BASE}/rides/${requestId}`);
         const data = await response.json();
         console.log('📡 API Response:', data);
-        
+
         if (data.success) {
           currentOffers = data.data.driverOffers || [];
           console.log('🚗 Loaded offers:', currentOffers);
@@ -583,13 +607,13 @@
       document.getElementById('requestId').textContent = rideData.requestId;
       document.getElementById('pickupLocation').textContent = rideData.pickupLocation.address;
       document.getElementById('rideDuration').textContent = `${rideData.duration} hour(s)`;
-      
+
       updateRideStatus(rideData.status);
     }
 
     async function checkUserCredits() {
       console.log('💳 checkUserCredits called to determine flow');
-      
+
       if (!rideData || !rideData.clientInfo) {
         console.error('No ride data available for credit check');
         userCredits = 0;
@@ -600,16 +624,16 @@
         const params = new URLSearchParams();
         if (rideData.clientInfo.email) params.append('email', rideData.clientInfo.email);
         if (rideData.clientInfo.phone) params.append('phone', rideData.clientInfo.phone);
-        
+
         console.log('🚀 Checking credits:', {
           email: rideData.clientInfo.email,
           phone: rideData.clientInfo.phone
         });
-        
+
         const response = await fetch(`${API_BASE}/credits?${params}`);
         const data = await response.json();
         console.log('💵 Credits response:', data);
-        
+
         if (data.success) {
           userCredits = data.data.totalCredits;
           document.getElementById('currentCredits').textContent = userCredits;
@@ -675,21 +699,21 @@
     async function processRidePayment(paymentMethod) {
       try {
         showStatusMessage('Creating payment...', 'info');
-        
+
         // Create the payment request
         const requestBody = {
           requestId: requestId,
           paymentMethod: paymentMethod
         };
-        
+
         // Only add payment type for service fee payments from drivers.html
         // Don't override returnUrl - let backend handle proper URL construction with payment IDs
         if (window.location.pathname.includes('drivers.html')) {
           requestBody.paymentType = 'service_fee';
         }
-        
+
         console.log('💳 Creating payment with:', requestBody);
-        
+
         const response = await fetch(`${API_BASE}/payments/create-ride-payment`, {
           method: 'POST',
           headers: {
@@ -700,7 +724,7 @@
 
         const data = await response.json();
         console.log('💳 Payment creation response:', data);
-        
+
         if (data.success) {
           // Redirect to payment
           const paymentUrl = paymentMethod === 'stripe' ? data.data.checkoutUrl : data.data.approvalUrl;
@@ -718,19 +742,19 @@
     // Start driver selection timer if needed (when offers are available)
     async function startDriverSelectionTimerIfNeeded() {
       console.log('⏰ Checking if timer should be started...');
-      
+
       // Only start timer if:
       // 1. User has credits
       // 2. There are pending offers
       // 3. Timer is not already active
       // 4. Ride status allows selection
-      
+
       if (userCredits >= 1 && currentOffers.length > 0 && !isTimerActive && rideData?.status !== 'matched') {
         const pendingOffers = currentOffers.filter(offer => offer.status === 'pending');
-        
+
         if (pendingOffers.length > 0) {
           console.log('✅ Starting driver selection timer - user has credits and offers available');
-          
+
           try {
             const response = await fetch(`${API_BASE}/rides/${requestId}/start-timer`, {
               method: 'POST',
@@ -738,7 +762,7 @@
                 'Content-Type': 'application/json'
               }
             });
-            
+
             const data = await response.json();
             if (data.success) {
               console.log('⏰ Timer started successfully on backend');
@@ -770,7 +794,7 @@
       try {
         const response = await fetch(`${API_BASE}/rides/${requestId}/timer-status`);
         const data = await response.json();
-        
+
         if (data.success && data.data.timer.isActive && !data.data.timer.hasExpired) {
           // Timer is active, start the visual countdown
           startTimer(data.data.timer.endTime);
@@ -791,13 +815,13 @@
     function startTimer(endTime) {
       timerEndTime = new Date(endTime);
       isTimerActive = true;
-      
+
       // Show timer section
       document.getElementById('timerSection').style.display = 'block';
-      
+
       // Update timer every second
       timerInterval = setInterval(updateTimerDisplay, 1000);
-      
+
       // Initial update
       updateTimerDisplay();
     }
@@ -810,7 +834,7 @@
 
       const now = new Date();
       const timeRemaining = Math.max(0, timerEndTime - now);
-      
+
       if (timeRemaining <= 0) {
         // Timer expired
         clearInterval(timerInterval);
@@ -821,11 +845,11 @@
       // Calculate minutes and seconds
       const minutes = Math.floor(timeRemaining / (1000 * 60));
       const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
-      
+
       // Format display
       const display = `${minutes}:${seconds.toString().padStart(2, '0')}`;
       document.getElementById('timerDisplay').textContent = display;
-      
+
       // Show warning when under 1 minute
       const warningEl = document.getElementById('timerWarning');
       if (timeRemaining <= 60000) { // 1 minute
@@ -840,19 +864,19 @@
     function handleTimerExpiry(message) {
       clearInterval(timerInterval);
       isTimerActive = false;
-      
+
       // Update timer section to show expiry
       const timerSection = document.getElementById('timerSection');
       timerSection.classList.add('timer-expired');
       document.getElementById('timerDisplay').textContent = 'EXPIRED';
-      
+
       // Hide driver offers
       document.getElementById('driversGrid').style.display = 'none';
       document.querySelector('.refresh-button').style.display = 'none';
-      
+
       // Show expiry message
       showStatusMessage(message, 'error');
-      
+
       // Redirect to home after 5 seconds
       setTimeout(() => {
         window.location.href = 'Index.html';
@@ -899,7 +923,7 @@
         const driverCard = createDriverCard(offer);
         grid.appendChild(driverCard);
       });
-      
+
       // Start timer when offers are displayed (if not already active)
       if (!isTimerActive && userCredits >= 1) {
         console.log('📅 Offers displayed - starting selection timer');
@@ -949,11 +973,11 @@
       try {
         console.log('🚗 User trying to accept driver:', driverId);
         showStatusMessage('Checking credits and accepting driver...', 'info');
-        
+
         // STEP 1: Check user credits FIRST (this is where credit check happens)
         console.log('💳 Checking if user has credits for driver selection...');
         await loadUserCredits();
-        
+
         if (userCredits >= 1) {
           // STEP 2A: User has credits - Start timer and accept driver
           console.log('✅ User has', userCredits, 'credits - proceeding with driver acceptance');
@@ -968,14 +992,14 @@
         showStatusMessage(`Error: ${error.message}`, 'error');
       }
     }
-    
+
     function showPaymentRequiredForDriverAcceptance(driverId) {
       console.log('💳 Showing payment modal for driver acceptance');
-      
+
       // Store the driver ID for after payment
       localStorage.setItem('pendingDriverAcceptance', driverId);
       localStorage.setItem('pendingRequestId', requestId);
-      
+
       // Show the payment modal
       document.getElementById('paymentRequired').style.display = 'block';
       document.getElementById('statusMessage').style.display = 'none';
@@ -983,14 +1007,14 @@
       document.getElementById('noOffers').style.display = 'none';
       document.querySelector('.refresh-button').style.display = 'none';
     }
-    
+
     async function startTimerAndAcceptDriver(driverId) {
       console.log('🚗 Accepting driver (timer should already be running):', driverId);
-      
+
       try {
         // Accept the driver (timer should already be active)
         showStatusMessage('Accepting driver...', 'info');
-        
+
         const response = await fetch(`${API_BASE}/rides/${requestId}/accept/${driverId}`, {
           method: 'POST',
           headers: {
@@ -999,22 +1023,22 @@
         });
 
         const data = await response.json();
-        
+
         if (data.success) {
           showStatusMessage('Driver accepted! Credit deducted. Redirecting to chat...', 'success');
-          
+
           // Stop timer
           clearInterval(timerInterval);
           isTimerActive = false;
           document.getElementById('timerSection').style.display = 'none';
-          
+
           // Disable all accept buttons
           const buttons = document.querySelectorAll('.accept-button');
           buttons.forEach(btn => {
             btn.disabled = true;
             btn.textContent = '✓ Driver Accepted';
           });
-          
+
           // Redirect to chat page after 2 seconds
           setTimeout(() => {
             window.location.href = `Chat.html?requestId=${requestId}&userType=client`;
@@ -1038,12 +1062,12 @@
         const params = new URLSearchParams();
         if (rideData.clientInfo.email) params.append('email', rideData.clientInfo.email);
         if (rideData.clientInfo.phone) params.append('phone', rideData.clientInfo.phone);
-        
+
         console.log('🚀 Loading user credits for driver acceptance...');
-        
+
         const response = await fetch(`${API_BASE}/credits?${params}`);
         const data = await response.json();
-        
+
         if (data.success) {
           userCredits = data.data.totalCredits;
           document.getElementById('currentCredits').textContent = userCredits;
@@ -1061,11 +1085,11 @@
 
     async function checkPaymentAndRefresh() {
       showStatusMessage('Checking payment status...', 'info');
-      
+
       try {
         // Refresh credits
         await checkUserCredits();
-        
+
         if (userCredits >= 1) {
           // User now has credits - show driver offers
           showStatusMessage('Payment found! Loading driver offers...', 'success');
@@ -1102,21 +1126,21 @@
     async function processRidePayment(paymentMethod) {
       try {
         showStatusMessage('Creating payment...', 'info');
-        
+
         // Create the payment request
         const requestBody = {
           requestId: requestId,
           paymentMethod: paymentMethod
         };
-        
+
         // Only add returnUrl for service fee payments from drivers.html
         if (window.location.pathname.includes('drivers.html')) {
           requestBody.returnUrl = `${window.location.origin}/payment-success-service.html?requestId=${requestId}`;
           requestBody.paymentType = 'service_fee';
         }
-        
+
         console.log('💳 Creating payment with:', requestBody);
-        
+
         const response = await fetch(`${API_BASE}/payments/create-ride-payment`, {
           method: 'POST',
           headers: {
@@ -1127,7 +1151,7 @@
 
         const data = await response.json();
         console.log('💳 Payment creation response:', data);
-        
+
         if (data.success) {
           // Redirect to payment
           const paymentUrl = paymentMethod === 'stripe' ? data.data.checkoutUrl : data.data.approvalUrl;
@@ -1157,9 +1181,9 @@
         animation: slideIn 0.3s ease-out;
       `;
       notification.textContent = message;
-      
+
       document.body.appendChild(notification);
-      
+
       // Remove after 5 seconds
       setTimeout(() => {
         notification.remove();
@@ -1167,15 +1191,16 @@
     }
 
     // Cleanup on page unload
-    window.addEventListener('beforeunload', function() {
+    window.addEventListener('beforeunload', function () {
       if (socket) {
         socket.disconnect();
       }
-      
+
       if (timerInterval) {
         clearInterval(timerInterval);
       }
     });
   </script>
 </body>
+
 </html>

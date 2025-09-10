@@ -60,5 +60,5 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
     console.log(`🚀 Opul Frontend Server running on http://localhost:${PORT}`);
     console.log(`📁 Serving files from: ${__dirname}`);
-    console.log(`🔗 Backend API should be running on: http://localhost:5000/api`);
+    console.log(`🔗 Backend API should be running on: https://opul-backend-qt2a.onrender.com/api`);
 });

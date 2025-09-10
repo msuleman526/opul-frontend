@@ -491,7 +491,7 @@
 
   <script>
     // Configuration
-    const API_BASE = 'http://localhost:5000/api';
+    const API_BASE = 'https://opul-backend-qt2a.onrender.com/api';
 
     // Global variables
     let socket = null;
@@ -545,7 +545,7 @@
         }
       } catch (error) {
         console.error('Backend connection test failed:', error);
-        showNotification('Cannot connect to backend server. Please make sure it is running on http://localhost:5000');
+        showNotification('Cannot connect to backend server. Please make sure it is running on https://opul-backend-qt2a.onrender.com');
         return false;
       }
     }
@@ -560,7 +560,7 @@
 
       // Initialize Socket.IO
       try {
-        socket = io('http://localhost:5000');
+        socket = io('https://opul-backend-qt2a.onrender.com');
         setupSocketListeners();
       } catch (error) {
         console.warn('Socket.IO connection failed:', error);
@@ -963,7 +963,7 @@
 
       const statusText = ride.status === 'in_progress' ? 'In Progress' : 'Matched';
       const statusColor = ride.status === 'in_progress' ? '#ffd700' : '#00ff00';
-      
+
       // Correct calculation: Driver earns hourly rate * duration
       const driverEarnings = (driverInfo.hourlyRate * ride.duration).toFixed(2);
       // Customer will pay: driver earnings + 10% tip
@@ -1083,13 +1083,13 @@
       card.className = 'ride-card';
 
       const createdTime = new Date(ride.createdAt).toLocaleTimeString();
-      
+
       // Correct calculation: Driver earns hourly rate * duration
       const driverEarnings = (driverInfo.hourlyRate * ride.duration).toFixed(2);
       // Customer will pay: driver earnings + 10% tip
       const tip = (driverEarnings * 0.1).toFixed(2);
       const customerWillPay = (parseFloat(driverEarnings) + parseFloat(tip)).toFixed(2);
-      
+
       const alreadyOffered = ride.driverOffers?.some(offer =>
         offer.driver === driverInfo.id && offer.status === 'pending'
       );

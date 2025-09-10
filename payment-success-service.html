@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -44,9 +45,17 @@
         }
 
         @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+            }
         }
 
         .success-title {
@@ -136,11 +145,17 @@
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
     </style>
 </head>
+
 <body>
     <div class="success-container" id="successContainer">
         <!-- Loading State -->
@@ -159,7 +174,7 @@
                 <br><br>
                 <strong>Redirecting you back to select driver offers...</strong>
             </p>
-            
+
             <div class="payment-details">
                 <h3>💳 Payment Summary</h3>
                 <div class="payment-row">
@@ -179,20 +194,26 @@
             <button class="back-button" onclick="returnToDriverSelection()">
                 🚗 Select Driver Offers
             </button>
-            
+
             <div style="margin-top: 20px; opacity: 0.7;">
-                <p style="font-size: 14px;">You will be automatically redirected in <span id="countdown">5</span> seconds...</p>
+                <p style="font-size: 14px;">You will be automatically redirected in <span id="countdown">5</span>
+                    seconds...</p>
             </div>
         </div>
 
         <!-- Error State -->
         <div id="errorState" style="display: none;">
-            <div class="success-icon" style="background: linear-gradient(45deg, #ff4444, #cc0000); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">❌</div>
-            <h1 class="success-title" style="background: linear-gradient(45deg, #ff4444, #cc0000); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Payment Failed</h1>
+            <div class="success-icon"
+                style="background: linear-gradient(45deg, #ff4444, #cc0000); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                ❌</div>
+            <h1 class="success-title"
+                style="background: linear-gradient(45deg, #ff4444, #cc0000); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                Payment Failed</h1>
             <div class="error-message" id="errorMessage">
                 There was an error processing your service fee payment. Please try again or contact support.
             </div>
-            <button class="back-button" onclick="returnToDriverSelection()" style="background: linear-gradient(45deg, #ff4444, #cc0000);">
+            <button class="back-button" onclick="returnToDriverSelection()"
+                style="background: linear-gradient(45deg, #ff4444, #cc0000);">
                 🔙 Back to Drivers
             </button>
         </div>
@@ -200,7 +221,7 @@
 
     <script>
         // Configuration
-        const API_BASE = 'http://localhost:5000/api';
+        const API_BASE = 'https://opul-backend-qt2a.onrender.com/api';
 
         // Get URL parameters
         const urlParams = new URLSearchParams(window.location.search);
@@ -225,7 +246,7 @@
                         // Try to find a recent completed payment for this request
                         const response = await fetch(`${API_BASE}/payments/find-recent-payment?requestId=${requestId}&paymentType=service_fee`);
                         const data = await response.json();
-                        
+
                         if (data.success && data.data.payment) {
                             console.log('✅ Found recent payment, showing success');
                             showSuccess(data.data.payment);
@@ -242,14 +263,14 @@
                 if (sessionId) {
                     // Stripe payment verification
                     console.log('💳 Verifying Stripe service fee payment:', sessionId);
-                    
+
                     const requestBody = {
                         sessionId: sessionId
                         // Note: No requestId for service fee payments to avoid backend validation issues
                     };
-                    
+
                     console.log('🚀 Stripe request body:', requestBody);
-                    
+
                     response = await fetch(`${API_BASE}/payments/capture-stripe`, {
                         method: 'POST',
                         headers: {
@@ -260,14 +281,14 @@
                 } else if (paypalOrderId) {
                     // PayPal payment verification
                     console.log('🌴 Verifying PayPal service fee payment:', paypalOrderId);
-                    
+
                     const requestBody = {
                         paypalOrderId: paypalOrderId
                         // Note: No requestId for service fee payments
                     };
-                    
+
                     console.log('🚀 PayPal request body:', requestBody);
-                    
+
                     response = await fetch(`${API_BASE}/payments/capture-order`, {
                         method: 'POST',
                         headers: {
@@ -281,7 +302,7 @@
                 console.log('💳 Service fee payment verification response:', data);
                 console.log('🔍 Response status:', response.status);
                 console.log('🔍 Response details:', JSON.stringify(data));
-                
+
                 // Check if HTTP status indicates error
                 if (!response.ok) {
                     console.error('❌ HTTP Error Details:', {
@@ -303,7 +324,7 @@
                         data: data.data,
                         fullResponse: data
                     });
-                    
+
                     // Try to get a meaningful error message
                     let errorMessage = 'Service fee payment verification failed';
                     if (typeof data.message === 'string') {
@@ -315,7 +336,7 @@
                     } else if (data.error && typeof data.error === 'object') {
                         errorMessage = JSON.stringify(data.error);
                     }
-                    
+
                     throw new Error(errorMessage);
                 }
             } catch (error) {
@@ -327,9 +348,9 @@
         function showSuccess(paymentData) {
             loadingState.style.display = 'none';
             successState.style.display = 'block';
-            
+
             console.log('✅ Service fee payment successful:', paymentData);
-            
+
             // Start countdown and auto-redirect
             startCountdownAndRedirect();
         }
@@ -351,15 +372,15 @@
                 window.location.href = 'Index.html';
             }
         }
-        
+
         function startCountdownAndRedirect() {
             let countdown = 5;
             const countdownEl = document.getElementById('countdown');
-            
+
             const interval = setInterval(() => {
                 countdown--;
                 countdownEl.textContent = countdown;
-                
+
                 if (countdown <= 0) {
                     clearInterval(interval);
                     returnToDriverSelection();
@@ -368,10 +389,11 @@
         }
 
         // Start verification when page loads
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             console.log('🚀 Initializing service fee payment success page...');
             verifyPayment();
         });
     </script>
 </body>
+
 </html>

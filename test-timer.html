@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,14 +11,16 @@
       padding: 20px;
       background: #f0f0f0;
     }
+
     .container {
       max-width: 600px;
       margin: 0 auto;
       background: white;
       padding: 20px;
       border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     }
+
     .timer-display {
       font-size: 48px;
       font-weight: bold;
@@ -25,6 +28,7 @@
       text-align: center;
       margin: 20px 0;
     }
+
     .button {
       background: #007bff;
       color: white;
@@ -34,33 +38,48 @@
       cursor: pointer;
       margin: 5px;
     }
+
     .button:hover {
       background: #0056b3;
     }
+
     .status {
       margin: 10px 0;
       padding: 10px;
       border-radius: 5px;
     }
-    .success { background: #d4edda; color: #155724; }
-    .error { background: #f8d7da; color: #721c24; }
-    .info { background: #d1ecf1; color: #0c5460; }
+
+    .success {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .error {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .info {
+      background: #d1ecf1;
+      color: #0c5460;
+    }
   </style>
 </head>
+
 <body>
   <div class="container">
     <h1>Timer Implementation Test</h1>
-    
+
     <div class="timer-display" id="timerDisplay">3:00</div>
-    
+
     <div>
       <button class="button" onclick="startTimer()">Start 3-Minute Timer</button>
       <button class="button" onclick="stopTimer()">Stop Timer</button>
       <button class="button" onclick="testAPI()">Test API Endpoints</button>
     </div>
-    
+
     <div id="status" class="status info" style="display: none;"></div>
-    
+
     <h3>Test Scenarios:</h3>
     <ul>
       <li>Start timer and let it count down</li>
@@ -68,18 +87,18 @@
       <li>Check timer status after page refresh</li>
       <li>Verify credit refund on timer expiry</li>
     </ul>
-    
+
     <h3>Test Requests:</h3>
     <div>
       <input type="text" id="requestIdInput" placeholder="Enter Request ID" style="width: 200px; padding: 5px;">
       <button class="button" onclick="testTimerEndpoints()">Test Timer Endpoints</button>
     </div>
-    
+
     <div id="apiResults"></div>
   </div>
 
   <script>
-    const API_BASE = 'http://localhost:5000/api';
+    const API_BASE = 'https://opul-backend-qt2a.onrender.com/api';
     let timerInterval = null;
     let timerEndTime = null;
 
@@ -87,7 +106,7 @@
       // Simulate 3-minute timer
       timerEndTime = new Date(Date.now() + 3 * 60 * 1000);
       showStatus('Timer started for 3 minutes', 'info');
-      
+
       timerInterval = setInterval(updateDisplay, 1000);
       updateDisplay();
     }
@@ -103,7 +122,7 @@
 
       const now = new Date();
       const timeRemaining = Math.max(0, timerEndTime - now);
-      
+
       if (timeRemaining <= 0) {
         clearInterval(timerInterval);
         document.getElementById('timerDisplay').textContent = 'EXPIRED';
@@ -113,10 +132,10 @@
 
       const minutes = Math.floor(timeRemaining / (1000 * 60));
       const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
-      
-      document.getElementById('timerDisplay').textContent = 
+
+      document.getElementById('timerDisplay').textContent =
         `${minutes}:${seconds.toString().padStart(2, '0')}`;
-      
+
       if (timeRemaining <= 60000) {
         document.getElementById('timerDisplay').style.color = '#ff0000';
       }
@@ -124,11 +143,11 @@
 
     async function testAPI() {
       showStatus('Testing API connection...', 'info');
-      
+
       try {
         const response = await fetch(`${API_BASE}/rides/active`);
         const data = await response.json();
-        
+
         if (data.success) {
           showStatus(`API working! Found ${data.data.length} active rides`, 'success');
         } else {
@@ -153,7 +172,7 @@
       try {
         const statusResponse = await fetch(`${API_BASE}/rides/${requestId}/timer-status`);
         const statusData = await statusResponse.json();
-        
+
         results.innerHTML += `
           <div class="status info">
             <strong>Timer Status:</strong><br>
@@ -175,7 +194,7 @@
           headers: { 'Content-Type': 'application/json' }
         });
         const startData = await startResponse.json();
-        
+
         results.innerHTML += `
           <div class="status ${startData.success ? 'success' : 'error'}">
             <strong>Start Timer:</strong><br>
@@ -199,4 +218,5 @@
     }
   </script>
 </body>
+
 </html>

@@ -33,7 +33,7 @@ npm run dev
 ### Access the Application
 
 - **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:5000/api (make sure backend is running)
+- **Backend API**: https://opul-backend-qt2a.onrender.com/api (make sure backend is running)
 
 ### Available Routes
 
@@ -53,7 +53,7 @@ npm run dev
 
 ### Backend Connection
 
-The frontend expects the backend API to be running on `http://localhost:5000/api`. Make sure your backend server is running before using the application.
+The frontend expects the backend API to be running on `https://opul-backend-qt2a.onrender.com/api`. Make sure your backend server is running before using the application.
 
 ### Development
 

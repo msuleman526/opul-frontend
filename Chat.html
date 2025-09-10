@@ -539,8 +539,8 @@
 
     <script>
         // Configuration
-        const API_BASE = 'http://localhost:5000/api';
-        const SOCKET_URL = 'http://localhost:5000';
+        const API_BASE = 'https://opul-backend-qt2a.onrender.com/api';
+        const SOCKET_URL = 'https://opul-backend-qt2a.onrender.com';
 
         // Get URL parameters
         const urlParams = new URLSearchParams(window.location.search);
@@ -683,7 +683,7 @@
                     if (data.sender === 'system') {
                         // System messages appear as system messages for everyone
                         addMessage(data.message, 'system', 'System', false, data.language, data.timestamp ? new Date(data.timestamp) : null);
-                        
+
                         // If it's a payment confirmation, play a special sound
                         if (data.messageType === 'payment_confirmation') {
                             playPaymentSuccessSound();
@@ -1148,7 +1148,7 @@
                     console.log('📊 Ride data loaded:', rideData);
                     console.log('👨‍🚗 Driver info:', rideData.driver);
                     console.log('💵 Driver offers:', rideData.driverOffers);
-                    
+
                     // Log hourly rate information for debugging
                     if (rideData.driver && rideData.driver.hourlyRate) {
                         console.log('✅ Driver hourly rate available:', rideData.driver.hourlyRate);
@@ -1209,7 +1209,7 @@
             } else {
                 console.log('⚠️ No driver data available, using default hourly rate:', hourlyRate);
             }
-            
+
             if (rideData && rideData.duration) {
                 duration = rideData.duration;
             } else if (rideData && rideData.rideDetails) {
@@ -1304,14 +1304,14 @@
                     if (paymentMethod === 'stripe') {
                         // Add message to chat before redirect
                         addMessage(`💳 Redirecting to Stripe to pay driver ${totalAmount.toFixed(2)}...`, 'system', 'System');
-                        
+
                         // Redirect to Stripe Checkout
                         console.log('🔗 Redirecting to Stripe:', data.data.checkoutUrl);
                         window.location.href = data.data.checkoutUrl;
                     } else if (paymentMethod === 'paypal') {
                         // Add message to chat before redirect
                         addMessage(`💳 Redirecting to PayPal to pay driver ${totalAmount.toFixed(2)}...`, 'system', 'System');
-                        
+
                         // Redirect to PayPal
                         console.log('🔗 Redirecting to PayPal:', data.data.approvalUrl);
                         window.location.href = data.data.approvalUrl;

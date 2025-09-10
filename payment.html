@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -97,8 +98,15 @@
     }
 
     @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.5;
+      }
     }
 
     .payment-method-selector {
@@ -146,7 +154,8 @@
       display: block;
     }
 
-    .paypal-container, .stripe-container {
+    .paypal-container,
+    .stripe-container {
       margin: 20px 0;
       width: 100%;
     }
@@ -288,8 +297,13 @@
     }
 
     @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
     }
 
     .payment-icons {
@@ -303,22 +317,22 @@
     }
   </style>
   <!-- PayPal SDK -->
-  <script 
+  <script
     src="https://www.paypal.com/sdk/js?client-id=AcEMhqkz8FMTCC9hfjGK1VLKOyemx6LZ-TANoMIm8yUsv-RRP8Qhbp4XrDGpYpEs-jXMJ_3w84mZxD6P&currency=USD"
-    onerror="handlePayPalLoadError()"
-  ></script>
+    onerror="handlePayPalLoadError()"></script>
   <!-- Stripe SDK -->
   <script src="https://js.stripe.com/v3/"></script>
 </head>
+
 <body>
   <div class="container">
     <div class="logo">OPUL</div>
-    
+
     <a href="Index.html" class="back-button">← Back to Home</a>
 
     <div class="payment-card">
       <h2 style="text-align: center; color: #00f0ff; margin-bottom: 30px;">Complete Your Payment</h2>
-      
+
       <div class="ride-details" id="rideDetails">
         <div class="detail-row">
           <span class="detail-label">Pickup Location:</span>
@@ -404,8 +418,8 @@
 
   <script>
     // Configuration
-    const API_BASE = 'http://localhost:5000/api';
-    
+    const API_BASE = 'https://opul-backend-qt2a.onrender.com/api';
+
     // Get URL parameters
     const urlParams = new URLSearchParams(window.location.search);
     const requestId = urlParams.get('requestId');
@@ -421,7 +435,7 @@
     let currentPaymentMethod = 'paypal';
 
     // Initialize page
-    window.addEventListener('load', async function() {
+    window.addEventListener('load', async function () {
       if (!requestId || !amount) {
         showMessage('Invalid payment link. Please start from the ride request page.', 'error');
         setTimeout(() => window.location.href = 'Index.html', 3000);
@@ -435,29 +449,29 @@
       try {
         // Show loading
         document.getElementById('loadingIndicator').style.display = 'block';
-        
+
         console.log('Initializing payment for:', { requestId, amount });
-        
+
         // Load ride details
         await loadRideDetails();
-        
+
         // Load user credits if email available
         await loadUserCredits();
-        
+
         // Initialize Stripe
         await initializeStripe();
-        
+
         // Initialize PayPal
         await initializePayPal();
-        
+
         // Start countdown timer
         startCountdownTimer();
-        
+
         // Hide loading
         document.getElementById('loadingIndicator').style.display = 'none';
         document.getElementById('paymentMethodSelector').style.display = 'flex';
         document.getElementById('alternativePayment').style.display = 'block';
-        
+
         console.log('Payment initialization complete');
       } catch (error) {
         console.error('Payment initialization failed:', error);
@@ -471,7 +485,7 @@
         // Get Stripe publishable key
         const response = await fetch(`${API_BASE}/payments/stripe-config`);
         const data = await response.json();
-        
+
         if (data.success && data.data.publishableKey) {
           stripePublishableKey = data.data.publishableKey;
           stripe = Stripe(stripePublishableKey);
@@ -486,12 +500,12 @@
 
     function selectPaymentMethod(method) {
       currentPaymentMethod = method;
-      
+
       // Update button styles
       document.getElementById('paypalBtn').classList.remove('active');
       document.getElementById('stripeBtn').classList.remove('active');
       document.getElementById(method + 'Btn').classList.add('active');
-      
+
       // Show/hide payment containers
       document.getElementById('paypalContainer').classList.remove('active');
       document.getElementById('stripeContainer').classList.remove('active');
@@ -506,7 +520,7 @@
 
       try {
         showMessage('Creating Stripe checkout session...', 'info');
-        
+
         const response = await fetch(`${API_BASE}/payments/create-order`, {
           method: 'POST',
           headers: {
@@ -520,14 +534,14 @@
         });
 
         const data = await response.json();
-        
+
         if (!data.success) {
           throw new Error(data.message);
         }
 
         // Redirect to Stripe Checkout
         window.location.href = data.data.checkoutUrl;
-        
+
       } catch (error) {
         console.error('Stripe payment error:', error);
         showMessage(`Stripe payment failed: ${error.message}`, 'error');
@@ -547,7 +561,7 @@
         // Fallback to API call
         const response = await fetch(`${API_BASE}/rides/${requestId}`);
         const data = await response.json();
-        
+
         if (data.success) {
           updateRideDetailsDisplay({
             requestId: data.data.requestId,
@@ -567,7 +581,7 @@
       document.getElementById('pickupLocation').textContent = rideData.pickupAddress || 'Address provided';
       document.getElementById('rideDuration').textContent = `${rideData.duration || 'N/A'} hour(s)`;
       document.getElementById('paymentAmount').textContent = `$${(rideData.upfrontFee || amount).toFixed(2)}`;
-      
+
       if (rideData.expiresAt) {
         expirationTime = new Date(rideData.expiresAt);
       } else {
@@ -579,7 +593,7 @@
     async function loadUserCredits() {
       // Check if user has provided email (from localStorage or prompt)
       let userEmail = localStorage.getItem('userEmail');
-      
+
       if (!userEmail) {
         const storedRequest = localStorage.getItem('currentRideRequest');
         if (storedRequest) {
@@ -594,11 +608,11 @@
         try {
           const response = await fetch(`${API_BASE}/payments/credits/${encodeURIComponent(userEmail)}`);
           const data = await response.json();
-          
+
           if (data.success) {
             userCredits = data.data.totalCredits;
             document.getElementById('availableCredits').textContent = userCredits.toFixed(2);
-            
+
             if (userCredits >= amount) {
               document.getElementById('useCreditsBtn').disabled = false;
             }
@@ -618,7 +632,7 @@
 
         // Create PayPal order
         console.log('Creating PayPal order with:', { requestId, amount });
-        
+
         const response = await fetch(`${API_BASE}/payments/create-order`, {
           method: 'POST',
           headers: {
@@ -633,7 +647,7 @@
 
         const data = await response.json();
         console.log('PayPal order response:', data);
-        
+
         if (!data.success) {
           throw new Error(data.message);
         }
@@ -643,13 +657,13 @@
 
         // Initialize PayPal buttons
         paypal.Buttons({
-          createOrder: function(data, actions) {
+          createOrder: function (data, actions) {
             return paymentOrderId;
           },
-          
-          onApprove: async function(data, actions) {
+
+          onApprove: async function (data, actions) {
             showMessage('Processing PayPal payment...', 'info');
-            
+
             try {
               const captureResponse = await fetch(`${API_BASE}/payments/capture-order`, {
                 method: 'POST',
@@ -662,13 +676,13 @@
               });
 
               const captureData = await captureResponse.json();
-              
+
               if (captureData.success) {
                 showMessage('Payment successful! Redirecting to driver selection...', 'success');
-                
+
                 // Clear stored request data
                 localStorage.removeItem('currentRideRequest');
-                
+
                 // Redirect to driver selection page
                 setTimeout(() => {
                   window.location.href = `drivers.html?requestId=${requestId}`;
@@ -680,13 +694,13 @@
               showMessage(`Payment failed: ${error.message}`, 'error');
             }
           },
-          
-          onError: function(err) {
+
+          onError: function (err) {
             console.error('PayPal error:', err);
             showMessage('PayPal payment error occurred. Please try again.', 'error');
           },
-          
-          onCancel: function(data) {
+
+          onCancel: function (data) {
             showMessage('PayPal payment cancelled. You can try again or use alternative payment methods.', 'info');
           }
         }).render('#paypal-button-container');
@@ -702,10 +716,10 @@
       return new Promise((resolve, reject) => {
         let attempts = 0;
         const maxAttempts = 50; // 5 seconds max wait
-        
+
         const checkPayPal = () => {
           attempts++;
-          
+
           if (typeof paypal !== 'undefined') {
             resolve();
           } else if (attempts >= maxAttempts) {
@@ -714,7 +728,7 @@
             setTimeout(checkPayPal, 100);
           }
         };
-        
+
         checkPayPal();
       });
     }
@@ -730,7 +744,7 @@
 
       try {
         showMessage('Processing credit payment...', 'info');
-        
+
         const response = await fetch(`${API_BASE}/payments/credits/use`, {
           method: 'POST',
           headers: {
@@ -744,7 +758,7 @@
         });
 
         const data = await response.json();
-        
+
         if (data.success) {
           // Mark ride as paid (simulate the payment completion)
           const captureResponse = await fetch(`${API_BASE}/payments/capture-order`, {
@@ -760,7 +774,7 @@
 
           showMessage('Credit payment successful! Redirecting to driver selection...', 'success');
           localStorage.setItem('userEmail', userEmail);
-          
+
           setTimeout(() => {
             window.location.href = `drivers.html?requestId=${requestId}`;
           }, 2000);
@@ -793,8 +807,8 @@
 
         const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-        
-        document.getElementById('timeRemaining').textContent = 
+
+        document.getElementById('timeRemaining').textContent =
           `${minutes}:${seconds.toString().padStart(2, '0')}`;
 
         // Add warning animation when less than 1 minute
@@ -819,11 +833,12 @@
     }
 
     // Cleanup on page unload
-    window.addEventListener('beforeunload', function() {
+    window.addEventListener('beforeunload', function () {
       if (timerInterval) {
         clearInterval(timerInterval);
       }
     });
   </script>
 </body>
+
 </html>

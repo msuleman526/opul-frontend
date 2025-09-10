@@ -462,7 +462,7 @@
 
   <script>
     // Configuration
-    const API_BASE = 'http://localhost:5000/api';
+    const API_BASE = 'https://opul-backend-qt2a.onrender.com/api';
 
     // Colombian addresses database
     const colombianAddresses = [
@@ -858,7 +858,7 @@
           if (hasCredits) {
             // User has credits - Show success and redirect to drivers page with timer
             showMessage(`✅ Ride request created! Timer started.\nYou have 3 minutes to select a driver.`, 'success');
-            
+
             localStorage.setItem('currentRideRequest', JSON.stringify({
               requestId: result.data.requestId,
               pickupAddress: address,
@@ -917,7 +917,7 @@
 
         if (result.success) {
           const requestId = result.data.requestId;
-          
+
           showMessage(`✅ Ride request created! Drivers can now see your request.\nRequest ID: ${requestId}\n\nNow please pay $10 to proceed with driver selection.`, 'success');
 
           // Store ride request data for after payment
@@ -949,11 +949,11 @@
 
       // Show payment modal
       showPaymentModal();
-      
+
       // Update payment modal to show it's for an existing ride
       const paymentContent = document.querySelector('.payment-content h3');
       paymentContent.innerHTML = '💳 Complete Your Ride Request';
-      
+
       const paymentInfo = document.querySelector('.payment-content p');
       paymentInfo.innerHTML = `Your ride request has been created and drivers can see it!<br><br>Pay $10 to get 1 credit and proceed with driver selection.<br><br><strong>Request ID:</strong> ${requestId}`;
     }
@@ -972,7 +972,7 @@
       const pendingRidePayment = localStorage.getItem('pendingRidePayment');
       const isForRide = !!pendingRidePayment;
       let rideData = null;
-      
+
       if (isForRide) {
         rideData = JSON.parse(pendingRidePayment);
         console.log('🚗 Processing service fee payment for existing ride:', rideData.requestId);
@@ -1047,7 +1047,7 @@
           console.warn('Backend may not be running');
         }
       } catch (error) {
-        console.warn('Cannot connect to backend. Make sure the server is running on http://localhost:5000');
+        console.warn('Cannot connect to backend. Make sure the server is running on https://opul-backend-qt2a.onrender.com');
       }
     }
 
@@ -1056,19 +1056,19 @@
       const urlParams = new URLSearchParams(window.location.search);
       const paymentForExistingRide = localStorage.getItem('paymentForExistingRide');
       const paymentRequestId = localStorage.getItem('paymentRequestId');
-      
+
       if (urlParams.get('payment') === 'success') {
         showMessage('Payment successful! 1 credit has been added to your account.', 'success');
-        
+
         if (paymentForExistingRide === 'true' && paymentRequestId) {
           // Payment was for an existing ride - redirect to drivers page with timer
           setTimeout(async () => {
             await loadUserCredits(); // Refresh credits
             localStorage.removeItem('pendingRidePayment');
             localStorage.removeItem('paymentForExistingRide');
-            
+
             showMessage('Payment complete! Now starting driver selection timer...', 'success');
-            
+
             // Start timer for the existing ride request
             try {
               const response = await fetch(`${API_BASE}/rides/${paymentRequestId}/start-timer`, {
@@ -1077,7 +1077,7 @@
                   'Content-Type': 'application/json'
                 }
               });
-              
+
               const result = await response.json();
               if (result.success) {
                 console.log('✅ Timer started for existing ride request');
@@ -1085,7 +1085,7 @@
             } catch (error) {
               console.error('Error starting timer:', error);
             }
-            
+
             // Redirect to drivers page
             setTimeout(() => {
               window.location.href = `drivers.html?requestId=${paymentRequestId}`;

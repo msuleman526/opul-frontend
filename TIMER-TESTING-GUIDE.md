@@ -109,13 +109,13 @@ driverSelectionTimer: {
 ### API Testing
 ```bash
 # Start timer
-curl -X POST http://localhost:5000/api/rides/RID123456/start-timer
+curl -X POST https://opul-backend-qt2a.onrender.com/api/rides/RID123456/start-timer
 
 # Get timer status
-curl http://localhost:5000/api/rides/RID123456/timer-status
+curl https://opul-backend-qt2a.onrender.com/api/rides/RID123456/timer-status
 
 # Accept driver (requires active timer)
-curl -X POST http://localhost:5000/api/rides/RID123456/accept/DRIVER_ID
+curl -X POST https://opul-backend-qt2a.onrender.com/api/rides/RID123456/accept/DRIVER_ID
 ```
 
 ## Testing with Postman/API Client

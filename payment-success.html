@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -44,9 +45,17 @@
         }
 
         @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+            }
         }
 
         .success-title {
@@ -136,11 +145,17 @@
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
     </style>
 </head>
+
 <body>
     <div class="success-container" id="successContainer">
         <!-- Loading State -->
@@ -155,12 +170,13 @@
             <div class="success-icon">✅</div>
             <h1 class="success-title">Driver Payment Successful!</h1>
             <p class="success-message">
-                Your payment to the driver has been processed successfully. The driver will be notified immediately 
+                Your payment to the driver has been processed successfully. The driver will be notified immediately
                 and will receive their payment from Opul within 24 hours.
                 <br><br>
-                <em style="opacity: 0.7;">This was your driver payment. You previously paid the $10 service fee to access the platform.</em>
+                <em style="opacity: 0.7;">This was your driver payment. You previously paid the $10 service fee to
+                    access the platform.</em>
             </p>
-            
+
             <div class="payment-details" id="paymentDetails">
                 <h3>💳 Payment Summary</h3>
                 <div class="payment-row">
@@ -192,12 +208,17 @@
 
         <!-- Error State -->
         <div id="errorState" style="display: none;">
-            <div class="success-icon" style="background: linear-gradient(45deg, #ff4444, #cc0000); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">❌</div>
-            <h1 class="success-title" style="background: linear-gradient(45deg, #ff4444, #cc0000); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Payment Failed</h1>
+            <div class="success-icon"
+                style="background: linear-gradient(45deg, #ff4444, #cc0000); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                ❌</div>
+            <h1 class="success-title"
+                style="background: linear-gradient(45deg, #ff4444, #cc0000); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                Payment Failed</h1>
             <div class="error-message" id="errorMessage">
                 There was an error processing your driver payment. Please try again or contact support.
             </div>
-            <button class="back-button" onclick="returnToChat()" style="background: linear-gradient(45deg, #ff4444, #cc0000);">
+            <button class="back-button" onclick="returnToChat()"
+                style="background: linear-gradient(45deg, #ff4444, #cc0000);">
                 🔙 Back to Chat
             </button>
         </div>
@@ -205,7 +226,7 @@
 
     <script>
         // Configuration
-        const API_BASE = 'http://localhost:5000/api';
+        const API_BASE = 'https://opul-backend-qt2a.onrender.com/api';
 
         // Get URL parameters
         const urlParams = new URLSearchParams(window.location.search);
@@ -234,14 +255,14 @@
                 if (sessionId) {
                     // Try different approaches for driver payment verification
                     console.log('💳 Verifying Stripe driver payment:', sessionId);
-                    
+
                     // First, try without requestId to see if that works
                     let requestBody = {
                         sessionId: sessionId
                     };
-                    
+
                     console.log('🚀 Trying Stripe capture without requestId first:', requestBody);
-                    
+
                     response = await fetch(`${API_BASE}/payments/capture-stripe`, {
                         method: 'POST',
                         headers: {
@@ -249,15 +270,15 @@
                         },
                         body: JSON.stringify(requestBody)
                     });
-                    
+
                     // If that fails, let's try with requestId
                     if (!response.ok) {
                         console.log('⚠️ First attempt failed, trying with requestId...');
-                        
+
                         requestBody.requestId = requestId;
-                        
+
                         console.log('🚀 Trying Stripe capture WITH requestId:', requestBody);
-                        
+
                         response = await fetch(`${API_BASE}/payments/capture-stripe`, {
                             method: 'POST',
                             headers: {
@@ -266,18 +287,18 @@
                             body: JSON.stringify(requestBody)
                         });
                     }
-                    
+
                     // If still failing, try a different endpoint
                     if (!response.ok) {
                         console.log('⚠️ Standard capture failed, trying driver-specific endpoint...');
-                        
+
                         requestBody = {
                             sessionId: sessionId,
                             requestId: requestId
                         };
-                        
+
                         console.log('🚀 Trying driver payment capture endpoint:', requestBody);
-                        
+
                         response = await fetch(`${API_BASE}/payments/capture-driver-payment`, {
                             method: 'POST',
                             headers: {
@@ -286,18 +307,18 @@
                             body: JSON.stringify(requestBody)
                         });
                     }
-                    
+
                 } else if (paypalOrderId) {
                     // PayPal payment verification for driver payments
                     console.log('🌴 Verifying PayPal driver payment:', paypalOrderId);
-                    
+
                     const requestBody = {
                         paypalOrderId: paypalOrderId,
                         requestId: requestId
                     };
-                    
+
                     console.log('🚀 PayPal request body:', requestBody);
-                    
+
                     response = await fetch(`${API_BASE}/payments/capture-order`, {
                         method: 'POST',
                         headers: {
@@ -311,7 +332,7 @@
                 console.log('💳 Driver payment verification response:', data);
                 console.log('🔍 Response status:', response.status);
                 console.log('🔍 Response details:', JSON.stringify(data));
-                
+
                 // Check if HTTP status indicates error
                 if (!response.ok) {
                     console.error('❌ HTTP Error Details:', {
@@ -320,7 +341,7 @@
                         url: response.url,
                         data: data
                     });
-                    
+
                     // Try to extract more meaningful error from response
                     let errorDetails = `HTTP ${response.status}: ${response.statusText}`;
                     if (data && data.message) {
@@ -328,13 +349,13 @@
                     } else if (data && data.error) {
                         errorDetails += ` - ${data.error}`;
                     }
-                    
+
                     throw new Error(errorDetails);
                 }
 
                 if (data.success) {
                     showSuccess(data.data);
-                    
+
                     // Send real-time notification to chat
                     notifyChat(data.data);
                 } else {
@@ -345,7 +366,7 @@
                         data: data.data,
                         fullResponse: data
                     });
-                    
+
                     // Try to get a meaningful error message
                     let errorMessage = 'Driver payment verification failed';
                     if (typeof data.message === 'string') {
@@ -357,7 +378,7 @@
                     } else if (data.error && typeof data.error === 'object') {
                         errorMessage = JSON.stringify(data.error);
                     }
-                    
+
                     throw new Error(errorMessage);
                 }
             } catch (error) {
@@ -369,9 +390,9 @@
         function showSuccess(paymentData) {
             loadingState.style.display = 'none';
             successState.style.display = 'block';
-            
+
             console.log('✅ Driver payment successful:', paymentData);
-            
+
             // Display payment details if available
             if (paymentData.calculation) {
                 const calc = paymentData.calculation;
@@ -397,11 +418,11 @@
 
             try {
                 // Connect to Socket.IO to send real-time notification
-                const socket = io('http://localhost:5000');
-                
+                const socket = io('https://opul-backend-qt2a.onrender.com');
+
                 socket.on('connect', () => {
                     console.log('✅ Connected to server for notification');
-                    
+
                     // Send payment success notification to the ride room
                     socket.emit('driver-payment-received', {
                         requestId: requestId,
@@ -410,9 +431,9 @@
                         message: `Payment received! You will get $${paymentData.amount.toFixed(2)} from Opul.`,
                         paymentId: paymentData.paymentId
                     });
-                    
+
                     console.log('📤 Sent payment notification to chat');
-                    
+
                     // Disconnect after sending
                     setTimeout(() => {
                         socket.disconnect();
@@ -436,7 +457,7 @@
         }
 
         // Start verification when page loads
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             console.log('🚀 Initializing driver payment success page...');
             verifyPayment();
         });
@@ -445,4 +466,5 @@
     <!-- Socket.IO for real-time notifications -->
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 </body>
+
 </html>
