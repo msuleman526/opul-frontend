@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Fee Payment Success - Opul</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap');
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Orbitron', sans-serif;
+            background: radial-gradient(circle at center, #0b0c2a, #050517);
+            color: white;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .success-container {
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 20px;
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .success-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #00ff88, #00cc6a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .success-title {
+            font-size: 28px;
+            margin-bottom: 15px;
+            background: linear-gradient(45deg, #00f0ff, #a18cd1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .success-message {
+            font-size: 16px;
+            margin-bottom: 30px;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        .payment-details {
+            background: rgba(0, 240, 255, 0.1);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+
+        .payment-details h3 {
+            margin: 0 0 15px 0;
+            color: #00f0ff;
+            text-align: center;
+        }
+
+        .payment-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .payment-row.total {
+            border-top: 1px solid rgba(0, 240, 255, 0.3);
+            padding-top: 10px;
+            margin-top: 15px;
+            font-weight: bold;
+            font-size: 18px;
+            color: #00f0ff;
+        }
+
+        .back-button {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(45deg, #00f0ff, #a18cd1);
+            color: white;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 240, 255, 0.3);
+        }
+
+        .loading {
+            opacity: 0.7;
+        }
+
+        .error-message {
+            color: #ff4444;
+            background: rgba(255, 68, 68, 0.1);
+            border: 1px solid rgba(255, 68, 68, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .spinner {
+            border: 3px solid rgba(0, 240, 255, 0.3);
+            border-top: 3px solid #00f0ff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="success-container" id="successContainer">
+        <!-- Loading State -->
+        <div id="loadingState">
+            <div class="spinner"></div>
+            <h2>Processing Payment...</h2>
+            <p>Please wait while we verify your service fee payment.</p>
+        </div>
+
+        <!-- Success State -->
+        <div id="successState" style="display: none;">
+            <div class="success-icon">✅</div>
+            <h1 class="success-title">Service Fee Payment Successful!</h1>
+            <p class="success-message">
+                Your $10 service fee has been processed successfully. You now have 1 credit to select a driver.
+                <br><br>
+                <strong>Redirecting you back to select driver offers...</strong>
+            </p>
+            
+            <div class="payment-details">
+                <h3>💳 Payment Summary</h3>
+                <div class="payment-row">
+                    <span>Service Fee:</span>
+                    <span>$10.00</span>
+                </div>
+                <div class="payment-row">
+                    <span>Credits Added:</span>
+                    <span>1 credit</span>
+                </div>
+                <div class="payment-row total">
+                    <span>Total Paid:</span>
+                    <span>$10.00</span>
+                </div>
+            </div>
+
+            <button class="back-button" onclick="returnToDriverSelection()">
+                🚗 Select Driver Offers
+            </button>
+            
+            <div style="margin-top: 20px; opacity: 0.7;">
+                <p style="font-size: 14px;">You will be automatically redirected in <span id="countdown">5</span> seconds...</p>
+            </div>
+        </div>
+
+        <!-- Error State -->
+        <div id="errorState" style="display: none;">
+            <div class="success-icon" style="background: linear-gradient(45deg, #ff4444, #cc0000); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">❌</div>
+            <h1 class="success-title" style="background: linear-gradient(45deg, #ff4444, #cc0000); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Payment Failed</h1>
+            <div class="error-message" id="errorMessage">
+                There was an error processing your service fee payment. Please try again or contact support.
+            </div>
+            <button class="back-button" onclick="returnToDriverSelection()" style="background: linear-gradient(45deg, #ff4444, #cc0000);">
+                🔙 Back to Drivers
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const API_BASE = 'http://localhost:5000/api';
+
+        // Get URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const sessionId = urlParams.get('session_id');
+        const paypalOrderId = urlParams.get('paypal_order_id');
+        const requestId = urlParams.get('requestId');
+
+        console.log('🎯 Service Fee Payment success page loaded:', { sessionId, paypalOrderId, requestId });
+
+        // Elements
+        const loadingState = document.getElementById('loadingState');
+        const successState = document.getElementById('successState');
+        const errorState = document.getElementById('errorState');
+        const errorMessage = document.getElementById('errorMessage');
+
+        async function verifyPayment() {
+            try {
+                if (!sessionId && !paypalOrderId) {
+                    // If we only have requestId but no payment session ID, this might be a redirect issue
+                    if (requestId) {
+                        console.log('⚠️ Only requestId provided, attempting to find recent payment...');
+                        // Try to find a recent completed payment for this request
+                        const response = await fetch(`${API_BASE}/payments/find-recent-payment?requestId=${requestId}&paymentType=service_fee`);
+                        const data = await response.json();
+                        
+                        if (data.success && data.data.payment) {
+                            console.log('✅ Found recent payment, showing success');
+                            showSuccess(data.data.payment);
+                            return;
+                        }
+                    }
+                    throw new Error('No payment ID provided');
+                }
+
+                console.log('🔍 Verifying service fee payment...');
+                console.log('📋 Request ID:', requestId);
+
+                let response;
+                if (sessionId) {
+                    // Stripe payment verification
+                    console.log('💳 Verifying Stripe service fee payment:', sessionId);
+                    
+                    const requestBody = {
+                        sessionId: sessionId
+                        // Note: No requestId for service fee payments to avoid backend validation issues
+                    };
+                    
+                    console.log('🚀 Stripe request body:', requestBody);
+                    
+                    response = await fetch(`${API_BASE}/payments/capture-stripe`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(requestBody)
+                    });
+                } else if (paypalOrderId) {
+                    // PayPal payment verification
+                    console.log('🌴 Verifying PayPal service fee payment:', paypalOrderId);
+                    
+                    const requestBody = {
+                        paypalOrderId: paypalOrderId
+                        // Note: No requestId for service fee payments
+                    };
+                    
+                    console.log('🚀 PayPal request body:', requestBody);
+                    
+                    response = await fetch(`${API_BASE}/payments/capture-order`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(requestBody)
+                    });
+                }
+
+                const data = await response.json();
+                console.log('💳 Service fee payment verification response:', data);
+                console.log('🔍 Response status:', response.status);
+                console.log('🔍 Response details:', JSON.stringify(data));
+                
+                // Check if HTTP status indicates error
+                if (!response.ok) {
+                    console.error('❌ HTTP Error Details:', {
+                        status: response.status,
+                        statusText: response.statusText,
+                        url: response.url,
+                        data: data
+                    });
+                    throw new Error(`HTTP Error ${response.status}: ${response.statusText}`);
+                }
+
+                if (data.success) {
+                    showSuccess(data.data);
+                } else {
+                    console.error('❌ Service fee payment verification failed:', {
+                        success: data.success,
+                        message: data.message,
+                        error: data.error,
+                        data: data.data,
+                        fullResponse: data
+                    });
+                    
+                    // Try to get a meaningful error message
+                    let errorMessage = 'Service fee payment verification failed';
+                    if (typeof data.message === 'string') {
+                        errorMessage = data.message;
+                    } else if (typeof data.error === 'string') {
+                        errorMessage = data.error;
+                    } else if (data.message && typeof data.message === 'object') {
+                        errorMessage = JSON.stringify(data.message);
+                    } else if (data.error && typeof data.error === 'object') {
+                        errorMessage = JSON.stringify(data.error);
+                    }
+                    
+                    throw new Error(errorMessage);
+                }
+            } catch (error) {
+                console.error('❌ Service fee payment verification error:', error);
+                showError(error.message);
+            }
+        }
+
+        function showSuccess(paymentData) {
+            loadingState.style.display = 'none';
+            successState.style.display = 'block';
+            
+            console.log('✅ Service fee payment successful:', paymentData);
+            
+            // Start countdown and auto-redirect
+            startCountdownAndRedirect();
+        }
+
+        function showError(message) {
+            loadingState.style.display = 'none';
+            errorState.style.display = 'block';
+            errorMessage.textContent = message;
+        }
+
+        function returnToDriverSelection() {
+            if (requestId) {
+                // Return to drivers page with payment completed flag
+                console.log('🚗 Redirecting to driver selection with requestId:', requestId);
+                window.location.href = `drivers.html?requestId=${requestId}&payment=completed`;
+            } else {
+                // Go to main page if no request ID
+                console.log('🏠 No requestId, redirecting to home');
+                window.location.href = 'Index.html';
+            }
+        }
+        
+        function startCountdownAndRedirect() {
+            let countdown = 5;
+            const countdownEl = document.getElementById('countdown');
+            
+            const interval = setInterval(() => {
+                countdown--;
+                countdownEl.textContent = countdown;
+                
+                if (countdown <= 0) {
+                    clearInterval(interval);
+                    returnToDriverSelection();
+                }
+            }, 1000);
+        }
+
+        // Start verification when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Initializing service fee payment success page...');
+            verifyPayment();
+        });
+    </script>
+</body>
+</html>

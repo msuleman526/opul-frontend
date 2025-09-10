@@ -1,0 +1,1600 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat - Opul Ride</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap');
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Orbitron', sans-serif;
+            background: radial-gradient(circle at center, #0b0c2a, #050517);
+            color: white;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-width: 600px;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            padding: 20px;
+            background: rgba(0, 240, 255, 0.1);
+            border-bottom: 1px solid rgba(0, 240, 255, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            background: linear-gradient(45deg, #00f0ff, #a18cd1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .ride-button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .ride-button.start {
+            background: linear-gradient(45deg, #00ff88, #00cc6a);
+            color: white;
+        }
+
+        .ride-button.end {
+            background: linear-gradient(45deg, #ff4444, #cc0000);
+            color: white;
+        }
+
+        .ride-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 240, 255, 0.3);
+        }
+
+        .ride-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .messages-container {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message.driver {
+            justify-content: flex-start;
+        }
+
+        /* Ensure proper message alignment */
+        .message.user .message-bubble {
+            margin-left: auto;
+            margin-right: 0;
+        }
+
+        .message.driver .message-bubble {
+            margin-left: 0;
+            margin-right: auto;
+        }
+
+        .message-bubble {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            position: relative;
+            word-wrap: break-word;
+        }
+
+        .message.user .message-bubble {
+            background: linear-gradient(45deg, #00f0ff, #a18cd1);
+            color: white;
+            margin-left: auto;
+        }
+
+        .message.driver .message-bubble {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(0, 240, 255, 0.3);
+        }
+
+        .system-message {
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        .system-message .message-bubble {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            display: inline-block;
+            font-size: 14px;
+        }
+
+        .message-time {
+            font-size: 11px;
+            opacity: 0.7;
+            margin-top: 4px;
+        }
+
+        .message-with-toggle {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .language-toggle {
+            padding: 5px 10px;
+            background: rgba(0, 240, 255, 0.2);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            border-radius: 12px;
+            color: #00f0ff;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .language-toggle:hover {
+            background: rgba(0, 240, 255, 0.3);
+        }
+
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 18px;
+            max-width: 70px;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+        }
+
+        .typing-indicator.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 3px;
+        }
+
+        .typing-dots span {
+            width: 6px;
+            height: 6px;
+            background: #00f0ff;
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-dots span:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .typing-dots span:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        @keyframes typing {
+
+            0%,
+            80%,
+            100% {
+                transform: scale(0);
+                opacity: 0.5;
+            }
+
+            40% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .input-section {
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-top: 1px solid rgba(0, 240, 255, 0.3);
+        }
+
+        .input-form {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            position: relative;
+        }
+
+        .message-input {
+            width: 100%;
+            min-height: 48px;
+            max-height: 120px;
+            padding: 12px 16px;
+            border: 2px solid rgba(0, 240, 255, 0.3);
+            border-radius: 25px;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            resize: none;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .message-input:focus {
+            border-color: #00f0ff;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+        }
+
+        .message-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .send-button {
+            width: 48px;
+            height: 48px;
+            border: none;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #00f0ff, #a18cd1);
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .send-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(0, 240, 255, 0.4);
+        }
+
+        .send-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .error-message {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 68, 68, 0.9);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+        }
+
+        .error-message.show {
+            opacity: 1;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: radial-gradient(circle at center, #0b0c2a, #050517);
+            padding: 30px;
+            border-radius: 15px;
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .modal-content h3 {
+            margin: 0 0 15px 0;
+            color: #00f0ff;
+        }
+
+        .modal-content p {
+            margin: 0 0 25px 0;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .modal-button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Orbitron', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-button.confirm {
+            background: linear-gradient(45deg, #ff4444, #cc0000);
+            color: white;
+        }
+
+        .modal-button.cancel {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .modal-button:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Mobile optimizations */
+        @media (max-width: 768px) {
+            .container {
+                max-width: 100%;
+                height: 100vh;
+            }
+
+            .header {
+                padding: 15px;
+            }
+
+            .header h1 {
+                font-size: 20px;
+            }
+
+            .messages-container {
+                padding: 15px;
+            }
+
+            .input-section {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🚗 Ride Chat</h1>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <!-- Pay Driver button (only for clients) -->
+                <button id="payDriverButton" class="ride-button"
+                    style="display: none; background: linear-gradient(45deg, #ff6b35, #f7931e); font-size: 14px; padding: 8px 15px; margin-right: 10px;"
+                    onclick="showPayDriverModal()">
+                    💳 Pay Driver
+                </button>
+
+                <!-- IMMEDIATE SCRIPT TO FORCE SHOW BUTTON FOR USERS -->
+                <script>
+                    (function () {
+                        const immediateUrlParams = new URLSearchParams(window.location.search);
+                        const immediateUserType = immediateUrlParams.get('userType');
+                        console.log('🔴 INLINE SCRIPT: userType =', immediateUserType);
+
+                        if (immediateUserType === 'user' || immediateUserType === 'cliebnt') {
+                            console.log('🔴 INLINE SCRIPT: Forcing Pay Driver button visible');
+                            const btn = document.getElementById('payDriverButton');
+                            if (btn) {
+                                btn.style.display = 'inline-block';
+                                btn.style.visibility = 'visible';
+                                console.log('🔴 INLINE SCRIPT: Button forced visible');
+                            } else {
+                                console.log('🔴 INLINE SCRIPT: Button not found yet');
+                            }
+                        }
+                    })();
+                </script>
+                <button id="rideButton" class="ride-button start" onclick="handleRideAction()">
+                    🚗 Start Ride
+                </button>
+            </div>
+        </div>
+
+        <!-- Messages Container -->
+        <div id="messagesContainer" class="messages-container">
+            <!-- Messages will be dynamically added here -->
+        </div>
+
+        <!-- Typing Indicator -->
+        <div id="typingIndicator" class="typing-indicator">
+            <div class="typing-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+
+        <!-- Input Section -->
+        <div class="input-section">
+            <form id="messageForm" class="input-form">
+                <div class="input-wrapper">
+                    <textarea id="messageInput" class="message-input" placeholder="Type your message..."
+                        rows="1"></textarea>
+                </div>
+                <button id="sendButton" type="submit" class="send-button">
+                    ➤
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Error Message -->
+    <div id="errorMessage" class="error-message"></div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <h3>🛑 End Ride?</h3>
+            <p>Are you sure you want to end this ride? This action cannot be undone.</p>
+            <div class="modal-buttons">
+                <button class="modal-button confirm" onclick="confirmEndRide()">
+                    Yes, End Ride
+                </button>
+                <button class="modal-button cancel" onclick="closeConfirmModal()">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pay Driver Modal -->
+    <div id="payDriverModal" class="modal">
+        <div class="modal-content">
+            <h3>💳 Pay Driver</h3>
+            <p style="font-size: 14px; opacity: 0.8; margin-bottom: 20px;">
+                This is the payment to your driver for the ride service.<br>
+                <em>Note: You already paid the $10 service fee to access the platform.</em>
+            </p>
+            <div id="paymentCalculation" style="margin: 20px 0; text-align: left;">
+                <p><strong>Driver Payment Calculation:</strong></p>
+                <div style="margin: 10px 0;">
+                    <span>Hourly Rate: $<span id="hourlyRate">0</span></span><br>
+                    <span>Duration: <span id="rideDuration">0</span> hours</span><br>
+                    <span>Base Amount: $<span id="baseAmount">0</span></span><br>
+                    <span>Service Fee (10%): $<span id="tipAmount">0</span></span><br>
+                    <hr style="margin: 10px 0; border: 1px solid rgba(0,240,255,0.3);">
+                    <span style="font-size: 18px; font-weight: bold; color: #00f0ff;">Total to Driver: $<span
+                            id="totalAmount">0</span></span>
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-button confirm" style="background: linear-gradient(45deg, #00f0ff, #a18cd1);"
+                    onclick="processDriverPayment('paypal')">
+                    Pay with PayPal
+                </button>
+                <button class="modal-button confirm" style="background: linear-gradient(45deg, #635bff, #1a73e8);"
+                    onclick="processDriverPayment('stripe')">
+                    Pay with Stripe
+                </button>
+                <button class="modal-button cancel" onclick="closePayDriverModal()">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Socket.IO -->
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+    <script>
+        // Configuration
+        const API_BASE = 'http://localhost:5000/api';
+        const SOCKET_URL = 'http://localhost:5000';
+
+        // Get URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const requestId = urlParams.get('requestId');
+        const userType = urlParams.get('userType') || 'user';
+        const driverToken = urlParams.get('driverToken');
+
+        // Current user and language
+        let currentUser = userType;
+        let currentLanguage = 'english';
+
+        // Socket and connection state
+        let socket = null;
+        let isConnected = false;
+        let reconnectAttempts = 0;
+        const maxReconnectAttempts = 5;
+
+        // Typing indicators
+        let lastTypingTime = 0;
+        let typingTimeout = null;
+
+        // Ride state
+        let rideInProgress = false;
+        let rideStartTime = null;
+        let rideData = null; // Store ride data for payment calculations
+        let clientInfo = null; // Store client info for payments
+
+        // Chat logging
+        let chatLog = [];
+
+        // Translations
+        const TRANSLATIONS = {
+            english: "Hi! I'm your driver and I'll be picking you up shortly. Feel free to message me if you have any questions! 🚗",
+            spanish: "¡Hola! Soy tu conductor y te recogeré en breve. ¡No dudes en enviarme un mensaje si tienes alguna pregunta! 🚗"
+        };
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('🚀 Initializing chat application...');
+
+            if (!requestId) {
+                showError('No request ID provided. Please access this page through a valid ride request.');
+                return;
+            }
+
+            console.log('📋 Chat initialized for request:', requestId);
+            console.log('👤 User type:', userType);
+
+            // Initialize socket connection
+            initializeSocket();
+
+            // Update ride button based on user type
+            updateRideButton();
+
+            // Update pay driver button based on user type and ride status
+            updatePayDriverButton();
+
+            // Load ride data for payment calculations
+            loadRideData();
+
+            // Load existing chat history
+            loadChatHistory();
+
+            // Show initial message for drivers
+            // if (userType === 'driver') {
+            //     setTimeout(() => {
+            //         addMessage(TRANSLATIONS[currentLanguage], 'driver', 'Driver', true);
+            //     }, 1000);
+            // }
+
+            // Show Pay Driver button for clients after loading ride data
+            if (userType === 'user' || userType === 'client') {
+                console.log('📝 Force showing Pay Driver button for user type');
+                // Force show the button immediately for users
+                document.getElementById('payDriverButton').style.display = 'inline-block';
+
+                setTimeout(() => {
+                    console.log('📝 Checking if Pay Driver button should be shown');
+                    updatePayDriverButton();
+                }, 2000);
+            }
+        });
+
+        function initializeSocket() {
+            try {
+                socket = io(SOCKET_URL, {
+                    transports: ['websocket', 'polling'],
+                    timeout: 20000,
+                    forceNew: true
+                });
+
+                socket.on('connect', () => {
+                    console.log('✅ Connected to server');
+                    isConnected = true;
+                    reconnectAttempts = 0;
+
+                    // Join the ride room
+                    socket.emit('join-ride', {
+                        requestId: requestId,
+                        userType: userType,
+                        driverToken: driverToken
+                    });
+
+                    // Load chat history after joining
+                    socket.emit('load-chat-history', { requestId });
+                });
+
+                socket.on('disconnect', (reason) => {
+                    console.log('❌ Disconnected from server:', reason);
+                    isConnected = false;
+
+                    if (reason === 'io server disconnect') {
+                        // Server disconnected us, try to reconnect
+                        setTimeout(() => {
+                            socket.connect();
+                        }, 1000);
+                    }
+                });
+
+                socket.on('connect_error', (error) => {
+                    console.error('❌ Connection error:', error);
+                    isConnected = false;
+
+                    if (reconnectAttempts < maxReconnectAttempts) {
+                        reconnectAttempts++;
+                        console.log(`🔄 Reconnection attempt ${reconnectAttempts}/${maxReconnectAttempts}`);
+                        setTimeout(() => {
+                            socket.connect();
+                        }, 2000 * reconnectAttempts);
+                    } else {
+                        showError('Unable to connect to chat server. Please refresh the page.');
+                    }
+                });
+
+                // FIXED: Handle receive-message event instead of message
+                socket.on('receive-message', (data) => {
+                    console.log('📨 Received message:', data);
+
+                    // Handle system messages (like payment confirmations) specially
+                    if (data.sender === 'system') {
+                        // System messages appear as system messages for everyone
+                        addMessage(data.message, 'system', 'System', false, data.language, data.timestamp ? new Date(data.timestamp) : null);
+                        
+                        // If it's a payment confirmation, play a special sound
+                        if (data.messageType === 'payment_confirmation') {
+                            playPaymentSuccessSound();
+                        }
+                    } else {
+                        // Only add message if it's not from current user to avoid duplicates
+                        if (data.sender !== currentUser) {
+                            // Fix message alignment: received messages go to left (driver), sent messages already handled
+                            addMessage(data.message, 'driver', data.sender);
+                            playNotificationSound();
+                        }
+                    }
+                });
+
+                // Handle chat history loading
+                socket.on('chat-history-loaded', (data) => {
+                    console.log('📚 Chat history loaded:', data.messages.length, 'messages');
+
+                    // Clear existing messages
+                    const messagesContainer = document.getElementById('messagesContainer');
+                    messagesContainer.innerHTML = '';
+
+                    // Add historical messages with correct alignment
+                    data.messages.forEach(msg => {
+                        // Current user's messages on right (user), others on left (driver)
+                        const messageType = (msg.sender === 'client' && userType === 'user') ||
+                            (msg.sender === 'driver' && userType === 'driver') ? 'user' : 'driver';
+                        addMessage(msg.message, messageType, msg.sender, false, msg.language, new Date(msg.timestamp));
+                    });
+                });
+
+                socket.on('user-typing', (data) => {
+                    if (data.sender !== currentUser) {
+                        showTypingIndicator();
+                    }
+                });
+
+                socket.on('user-stopped-typing', (data) => {
+                    if (data.sender !== currentUser) {
+                        hideTypingIndicator();
+                    }
+                });
+
+                socket.on('ride-status-changed', (data) => {
+                    console.log('🚗 Ride status update:', data);
+                    if (data.status === 'in_progress') {
+                        rideInProgress = true;
+                        addMessage("🚗 Ride has started! Have a safe trip!", 'system', 'System');
+                    } else if (data.status === 'completed') {
+                        rideInProgress = false;
+                        addMessage("🏁 Ride completed! Thank you for riding with Opul!", 'system', 'System');
+                    }
+                    updateRideButton();
+                });
+
+                socket.on('user-joined', (data) => {
+                    console.log('👋 User joined:', data);
+                    if (data.userType !== userType) {
+                        addMessage(`${data.userType === 'driver' ? 'Driver' : 'Passenger'} has joined the chat`, 'system', 'System');
+                    }
+                });
+
+                socket.on('user-left', (data) => {
+                    console.log('👋 User left:', data);
+                    if (data.userType !== userType) {
+                        addMessage(`${data.userType === 'driver' ? 'Driver' : 'Passenger'} has left the chat`, 'system', 'System');
+                    }
+                });
+
+                socket.on('driver-payment-received', (data) => {
+                    console.log('💰 Driver payment received:', data);
+                    if (data.requestId === requestId) {
+                        if (userType === 'driver') {
+                            // Show payment confirmation to driver
+                            addMessage(`💰 ${data.message}`, 'system', 'System');
+                            showPaymentReceivedNotification(data);
+                        } else {
+                            // Show payment sent confirmation to client
+                            addMessage(`✅ Driver payment sent successfully! Driver will receive ${data.calculation?.totalAmount?.toFixed(2) || data.amount.toFixed(2)}.`, 'system', 'System');
+                        }
+                    }
+                });
+
+                socket.on('payment-notification', (data) => {
+                    console.log('🔔 Payment notification:', data);
+                    if (data.requestId === requestId && data.type === 'driver_payment_success') {
+                        if (userType === 'driver') {
+                            addMessage(`✅ Payment confirmed! You will receive ${data.calculation?.totalAmount?.toFixed(2) || data.amount.toFixed(2)} from Opul within 24 hours.`, 'system', 'System');
+                        }
+                    }
+                });
+
+                socket.on('error', (error) => {
+                    console.error('❌ Socket error:', error);
+                    showError('Connection error: ' + error.message);
+                });
+
+            } catch (error) {
+                console.error('❌ Failed to initialize socket:', error);
+                showError('Failed to initialize chat connection.');
+            }
+        }
+
+        async function loadChatHistory() {
+            try {
+                const response = await fetch(`${API_BASE}/chat/${requestId}/messages`, {
+                    headers: {
+                        ...(driverToken && { 'Authorization': `Bearer ${driverToken}` })
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && data.data.messages) {
+                        console.log('📚 Loading chat history from API:', data.data.messages.length, 'messages');
+
+                        // Clear existing messages
+                        const messagesContainer = document.getElementById('messagesContainer');
+                        messagesContainer.innerHTML = '';
+
+                        // Add historical messages with correct alignment
+                        data.data.messages.forEach(msg => {
+                            // Current user's messages on right (user), others on left (driver)
+                            const messageType = (msg.sender === 'client' && userType === 'user') ||
+                                (msg.sender === 'driver' && userType === 'driver') ? 'user' : 'driver';
+                            addMessage(msg.message, messageType, msg.sender, false, msg.language, new Date(msg.timestamp));
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Error loading chat history:', error);
+            }
+        }
+
+        async function sendMessage(message) {
+            if (!message.trim()) return;
+
+            const messageInput = document.getElementById('messageInput');
+            const sendButton = document.getElementById('sendButton');
+
+            // Disable input while sending
+            messageInput.disabled = true;
+            sendButton.disabled = true;
+
+            // Add message to UI immediately
+            addMessage(message, 'user', currentUser);
+
+            try {
+                if (socket && isConnected) {
+                    // Send via socket for real-time delivery
+                    socket.emit('send-message', {
+                        requestId: requestId,
+                        message: message,
+                        sender: currentUser,
+                        timestamp: new Date().toISOString()
+                    });
+                    console.log('📤 Message sent via socket');
+                } else {
+                    // Fallback to HTTP API
+                    const response = await fetch(`${API_BASE}/chat/${requestId}/messages`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            ...(driverToken && { 'Authorization': `Bearer ${driverToken}` })
+                        },
+                        body: JSON.stringify({
+                            message: message,
+                            sender: currentUser === 'user' ? 'client' : currentUser
+                        })
+                    });
+
+                    const data = await response.json();
+                    if (!data.success) {
+                        throw new Error(data.message || 'Failed to send message');
+                    }
+                    console.log('📤 Message sent via HTTP API');
+                }
+            } catch (error) {
+                console.error('❌ Error sending message:', error);
+                showError('Failed to send message. Please try again.');
+
+                // Remove the message from UI if sending failed
+                const messagesContainer = document.getElementById('messagesContainer');
+                const lastMessage = messagesContainer.lastElementChild;
+                if (lastMessage && lastMessage.classList.contains('message') && lastMessage.classList.contains('user')) {
+                    messagesContainer.removeChild(lastMessage);
+                }
+            } finally {
+                // Re-enable input
+                messageInput.disabled = false;
+                sendButton.disabled = false;
+            }
+        }
+
+        function addMessage(text, type, sender, showLanguageToggle = false, language = currentLanguage, customTimestamp = null) {
+            const messageDiv = document.createElement('div');
+
+            const messageTime = customTimestamp || new Date();
+            const time = messageTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const timestamp = messageTime.toISOString();
+
+            // Log the message
+            if (type !== 'system') {
+                logMessage(text, type, sender, timestamp, language);
+            }
+
+            if (type === 'system') {
+                messageDiv.className = 'system-message';
+                messageDiv.innerHTML = `
+                    <div class="message-bubble">
+                        ${text}
+                    </div>
+                `;
+            } else {
+                messageDiv.className = `message ${type}`;
+
+                if (showLanguageToggle) {
+                    messageDiv.innerHTML = `
+                        <div class="message-with-toggle">
+                            <div class="message-bubble" id="firstMessage">
+                                ${text}
+                                <div class="message-time">${time}</div>
+                            </div>
+                            <button class="language-toggle" onclick="toggleLanguage()">
+                                Switch to ${currentLanguage === 'spanish' ? 'English' : 'Español'}
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    messageDiv.innerHTML = `
+                        <div class="message-bubble">
+                            ${text}
+                            <div class="message-time">${time}</div>
+                        </div>
+                    `;
+                }
+            }
+
+            const messagesContainer = document.getElementById('messagesContainer');
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function toggleLanguage() {
+            currentLanguage = currentLanguage === 'spanish' ? 'english' : 'spanish';
+
+            const firstMessageBubble = document.getElementById('firstMessage');
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            // if (firstMessageBubble) {
+            //     firstMessageBubble.innerHTML = `
+            //         ${TRANSLATIONS[currentLanguage]}
+            //         <div class="message-time">${time}</div>
+            //     `;
+            // }
+
+            const toggleButton = document.querySelector('.language-toggle');
+            if (toggleButton) {
+                toggleButton.textContent = `Switch to ${currentLanguage === 'spanish' ? 'English' : 'Español'}`;
+            }
+        }
+
+        function showTypingIndicator() {
+            const typingIndicator = document.getElementById('typingIndicator');
+            typingIndicator.classList.add('show');
+
+            // Auto-hide after 3 seconds
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => {
+                hideTypingIndicator();
+            }, 3000);
+        }
+
+        function hideTypingIndicator() {
+            const typingIndicator = document.getElementById('typingIndicator');
+            typingIndicator.classList.remove('show');
+        }
+
+        function emitTyping() {
+            if (socket && isConnected) {
+                const now = Date.now();
+                if (now - lastTypingTime > 1000) { // Throttle typing events
+                    socket.emit('user-typing', {
+                        requestId,
+                        sender: currentUser
+                    });
+                    lastTypingTime = now;
+                }
+            }
+        }
+
+        function emitStoppedTyping() {
+            if (socket && isConnected) {
+                socket.emit('user-stopped-typing', {
+                    requestId,
+                    sender: currentUser
+                });
+            }
+        }
+
+        // Ride control functions
+        async function handleRideAction() {
+            if (!rideInProgress) {
+                await startRide();
+            } else {
+                showConfirmModal();
+            }
+        }
+
+        async function startRide() {
+            if (!driverToken) {
+                showError('Only drivers can start rides.');
+                return;
+            }
+
+            const rideButton = document.getElementById('rideButton');
+            rideButton.disabled = true;
+
+            try {
+                const response = await fetch(`${API_BASE}/rides/${requestId}/start`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${driverToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    rideInProgress = true;
+                    rideStartTime = new Date().toISOString();
+                    updateRideButton();
+                    addMessage("🚗 Ride has started! Have a safe trip!", 'system', 'System');
+
+                    // Emit real-time update
+                    if (socket && isConnected) {
+                        socket.emit('ride-status-update', {
+                            rideId: requestId,
+                            status: 'in_progress'
+                        });
+                    }
+
+                    console.log('✅ Ride started successfully');
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (error) {
+                console.error('❌ Error starting ride:', error);
+                showError('Failed to start ride. Please try again.');
+            } finally {
+                rideButton.disabled = false;
+            }
+        }
+
+        async function confirmEndRide() {
+            if (!driverToken) {
+                showError('Only drivers can end rides.');
+                return;
+            }
+
+            const confirmButton = document.querySelector('.modal-button.confirm');
+            confirmButton.disabled = true;
+
+            try {
+                const response = await fetch(`${API_BASE}/rides/${requestId}/end`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${driverToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    rideInProgress = false;
+                    updateRideButton();
+                    closeConfirmModal();
+
+                    const rideDetails = data.data.rideDetails;
+                    const duration = rideDetails.actualDuration || 'Unknown';
+                    const cost = rideDetails.finalCost || 'Unknown';
+                    addMessage(`🏁 Ride completed! Duration: ${duration} hours, Final cost: $${cost}`, 'system', 'System');
+
+                    // Emit real-time update
+                    if (socket && isConnected) {
+                        socket.emit('ride-status-update', {
+                            rideId: requestId,
+                            status: 'completed'
+                        });
+                    }
+
+                    // Store chat log
+                    storeChatLog();
+                    console.log('✅ Ride ended successfully');
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (error) {
+                console.error('❌ Error ending ride:', error);
+                showError('Failed to end ride. Please try again.');
+            } finally {
+                confirmButton.disabled = false;
+            }
+        }
+
+        function updateRideButton() {
+            const rideButton = document.getElementById('rideButton');
+
+            // Only show ride controls for drivers
+            if (currentUser !== 'driver' || !driverToken) {
+                rideButton.style.display = 'none';
+                return;
+            }
+
+            if (rideInProgress) {
+                rideButton.className = 'ride-button end';
+                rideButton.innerHTML = '🛑 End Ride';
+            } else {
+                rideButton.className = 'ride-button start';
+                rideButton.innerHTML = '🚗 Start Ride';
+            }
+        }
+
+        function updatePayDriverButton() {
+            const payDriverButton = document.getElementById('payDriverButton');
+
+            console.log('🔍 updatePayDriverButton called:');
+            console.log('- currentUser:', currentUser);
+            console.log('- userType:', userType);
+            console.log('- driverToken:', driverToken ? 'Present' : 'Not present');
+            console.log('- rideData:', rideData ? 'Loaded' : 'Not loaded');
+            console.log('- rideInProgress:', rideInProgress);
+
+            // ALWAYS show pay driver button for users
+            if (userType === 'user' || userType === 'client') {
+                console.log('✅ ALWAYS Showing Pay Driver button for user');
+                payDriverButton.style.display = 'inline-block';
+                payDriverButton.innerHTML = '💳 Pay Driver';
+            } else {
+                console.log('❌ Hiding Pay Driver button for non-users');
+                payDriverButton.style.display = 'none';
+            }
+        }
+
+        async function loadRideData() {
+            try {
+                const response = await fetch(`${API_BASE}/rides/${requestId}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    rideData = data.data;
+                    clientInfo = rideData.clientInfo;
+
+                    // Update ride status
+                    if (rideData.status === 'in_progress') {
+                        rideInProgress = true;
+                    }
+
+                    updateRideButton();
+                    updatePayDriverButton(); // Call again after ride data is loaded
+
+                    console.log('📊 Ride data loaded:', rideData);
+                    console.log('👨‍🚗 Driver info:', rideData.driver);
+                    console.log('💵 Driver offers:', rideData.driverOffers);
+                    
+                    // Log hourly rate information for debugging
+                    if (rideData.driver && rideData.driver.hourlyRate) {
+                        console.log('✅ Driver hourly rate available:', rideData.driver.hourlyRate);
+                    } else if (rideData.driverOffers && rideData.driverOffers.length > 0) {
+                        const acceptedOffer = rideData.driverOffers.find(offer => offer.status === 'accepted');
+                        if (acceptedOffer && acceptedOffer.hourlyRate) {
+                            console.log('✅ Driver hourly rate from offer:', acceptedOffer.hourlyRate);
+                        } else {
+                            console.log('⚠️ No accepted driver offer with hourly rate found');
+                        }
+                    } else {
+                        console.log('⚠️ No driver hourly rate information available');
+                    }
+                } else {
+                    console.error('❌ Failed to load ride data:', data.message);
+                }
+            } catch (error) {
+                console.error('❌ Error loading ride data:', error);
+            }
+        }
+
+        function showPayDriverModal() {
+            console.log('💳 Opening Pay Driver modal');
+            console.log('📊 Current ride data:', rideData);
+
+            // Default values for demo/testing purposes
+            let hourlyRate = 25.00;
+            let duration = 2; // 2 hours default
+
+            // Use actual ride data if available
+            if (rideData && rideData.driver && rideData.driver.hourlyRate) {
+                hourlyRate = rideData.driver.hourlyRate;
+                console.log('✅ Using driver hourly rate:', hourlyRate);
+            } else if (rideData && rideData.driverOffers && rideData.driverOffers.length > 0) {
+                // Check if driver rate is available in accepted offer
+                const acceptedOffer = rideData.driverOffers.find(offer => offer.status === 'accepted');
+                if (acceptedOffer) {
+                    console.log('💰 Found accepted offer:', acceptedOffer);
+                    if (acceptedOffer.hourlyRate) {
+                        hourlyRate = acceptedOffer.hourlyRate;
+                        console.log('✅ Using driver hourly rate from offer:', hourlyRate);
+                    } else if (acceptedOffer.driver && acceptedOffer.driver.hourlyRate) {
+                        hourlyRate = acceptedOffer.driver.hourlyRate;
+                        console.log('✅ Using driver hourly rate from populated driver in offer:', hourlyRate);
+                    } else {
+                        console.log('⚠️ Accepted offer found but no hourly rate:', acceptedOffer);
+                    }
+                } else {
+                    // Check any driver offer for hourly rate
+                    const offerWithRate = rideData.driverOffers.find(offer => offer.hourlyRate || (offer.driver && offer.driver.hourlyRate));
+                    if (offerWithRate) {
+                        hourlyRate = offerWithRate.hourlyRate || offerWithRate.driver.hourlyRate;
+                        console.log('✅ Using hourly rate from any available offer:', hourlyRate);
+                    } else {
+                        console.log('⚠️ No offers with hourly rate found, using fallback:', hourlyRate);
+                    }
+                }
+            } else {
+                console.log('⚠️ No driver data available, using default hourly rate:', hourlyRate);
+            }
+            
+            if (rideData && rideData.duration) {
+                duration = rideData.duration;
+            } else if (rideData && rideData.rideDetails) {
+                // Calculate duration from ride start/end if available
+                if (rideData.rideDetails.actualDuration) {
+                    duration = rideData.rideDetails.actualDuration;
+                } else if (rideData.rideDetails.startTime) {
+                    // Calculate current duration if ride is in progress
+                    const now = new Date();
+                    const startTime = new Date(rideData.rideDetails.startTime);
+                    duration = Math.ceil((now - startTime) / (1000 * 60 * 60)); // hours
+                }
+            } else if (rideData && rideData.estimatedDuration) {
+                duration = rideData.estimatedDuration;
+            }
+
+            const baseAmount = hourlyRate * duration;
+            const serviceFeeAmount = baseAmount * 0.10; // 10% service fee
+            const totalAmount = baseAmount + serviceFeeAmount;
+
+            console.log('💰 Payment calculation:', { hourlyRate, duration, baseAmount, serviceFeeAmount, totalAmount });
+
+            // Update modal with calculation
+            document.getElementById('hourlyRate').textContent = hourlyRate.toFixed(2);
+            document.getElementById('rideDuration').textContent = duration;
+            document.getElementById('baseAmount').textContent = baseAmount.toFixed(2);
+            document.getElementById('tipAmount').textContent = serviceFeeAmount.toFixed(2);
+            document.getElementById('totalAmount').textContent = totalAmount.toFixed(2);
+
+            // Show modal
+            const modal = document.getElementById('payDriverModal');
+            modal.classList.add('show');
+        }
+
+        function closePayDriverModal() {
+            const modal = document.getElementById('payDriverModal');
+            modal.classList.remove('show');
+        }
+
+        async function processDriverPayment(paymentMethod) {
+            console.log('💳 Processing driver payment:', paymentMethod);
+
+            const buttons = document.querySelectorAll('#payDriverModal .modal-button');
+            buttons.forEach(btn => btn.disabled = true);
+
+            try {
+                // Get payment calculation from modal
+                const hourlyRate = parseFloat(document.getElementById('hourlyRate').textContent);
+                const duration = parseFloat(document.getElementById('rideDuration').textContent);
+                const baseAmount = parseFloat(document.getElementById('baseAmount').textContent);
+                const serviceFeeAmount = parseFloat(document.getElementById('tipAmount').textContent);
+                const totalAmount = parseFloat(document.getElementById('totalAmount').textContent);
+
+                // Use default client info for demo purposes
+                const defaultClientInfo = {
+                    email: 'client@example.com',
+                    phone: '+1234567890'
+                };
+
+                const paymentData = {
+                    requestId: requestId,
+                    clientEmail: clientInfo?.email || defaultClientInfo.email,
+                    clientPhone: clientInfo?.phone || defaultClientInfo.phone,
+                    paymentMethod: paymentMethod,
+                    amount: totalAmount,
+                    returnUrl: `${window.location.origin}/payment-success.html?requestId=${requestId}`, // Driver payment success page
+                    calculation: {
+                        hourlyRate: hourlyRate,
+                        duration: duration,
+                        baseAmount: baseAmount,
+                        tip: serviceFeeAmount,
+                        totalAmount: totalAmount
+                    }
+                };
+
+                console.log('📤 Payment data:', paymentData);
+
+                const response = await fetch(`${API_BASE}/payments/create-driver-payment`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(paymentData)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Close modal
+                    closePayDriverModal();
+
+                    if (paymentMethod === 'stripe') {
+                        // Add message to chat before redirect
+                        addMessage(`💳 Redirecting to Stripe to pay driver ${totalAmount.toFixed(2)}...`, 'system', 'System');
+                        
+                        // Redirect to Stripe Checkout
+                        console.log('🔗 Redirecting to Stripe:', data.data.checkoutUrl);
+                        window.location.href = data.data.checkoutUrl;
+                    } else if (paymentMethod === 'paypal') {
+                        // Add message to chat before redirect
+                        addMessage(`💳 Redirecting to PayPal to pay driver ${totalAmount.toFixed(2)}...`, 'system', 'System');
+                        
+                        // Redirect to PayPal
+                        console.log('🔗 Redirecting to PayPal:', data.data.approvalUrl);
+                        window.location.href = data.data.approvalUrl;
+                    }
+
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (error) {
+                console.error('❌ Error processing driver payment:', error);
+                showError('Failed to process payment: ' + error.message);
+                closePayDriverModal();
+            } finally {
+                buttons.forEach(btn => btn.disabled = false);
+            }
+        }
+
+        function showConfirmModal() {
+            const modal = document.getElementById('confirmModal');
+            modal.classList.add('show');
+        }
+
+        function closeConfirmModal() {
+            const modal = document.getElementById('confirmModal');
+            modal.classList.remove('show');
+        }
+
+        // Chat logging functions
+        function logMessage(text, type, sender, timestamp, language) {
+            const messageEntry = {
+                id: generateMessageId(),
+                text: text,
+                type: type,
+                sender: sender,
+                timestamp: timestamp,
+                language: language
+            };
+
+            chatLog.push(messageEntry);
+        }
+
+        function generateMessageId() {
+            return 'msg_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        function storeChatLog() {
+            if (chatLog.length === 0) {
+                console.log('No messages to store for this ride.');
+                return;
+            }
+
+            const rideEndTime = new Date().toISOString();
+            const rideSession = {
+                sessionId: generateSessionId(),
+                requestId: requestId,
+                rideStartTime: rideStartTime,
+                rideEndTime: rideEndTime,
+                totalMessages: chatLog.length,
+                messages: [...chatLog],
+                storedAt: new Date().toISOString()
+            };
+
+            console.log('📋 RIDE CHAT LOG STORED:', rideSession);
+
+            // Store in localStorage as backup
+            localStorage.setItem(`ride_log_${rideSession.sessionId}`, JSON.stringify(rideSession));
+
+            chatLog = [];
+            rideStartTime = null;
+        }
+
+        function generateSessionId() {
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '');
+            const randomSuffix = Math.random().toString(36).substr(2, 6);
+            return `ride_${timestamp}_${randomSuffix}`;
+        }
+
+        async function downloadChatLog() {
+            try {
+                const response = await fetch(`${API_BASE}/chat/${requestId}/export?format=json`);
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `chat_log_${requestId}.json`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                } else {
+                    throw new Error('Failed to download chat log');
+                }
+            } catch (error) {
+                console.error('Error downloading chat log:', error);
+                showError('Failed to download chat log.');
+            }
+        }
+
+        function playNotificationSound() {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                oscillator.frequency.value = 800;
+                oscillator.type = 'sine';
+
+                gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.1);
+            } catch (error) {
+                console.log('Notification sound not available');
+            }
+        }
+
+        function showError(message) {
+            const errorEl = document.getElementById('errorMessage');
+            errorEl.textContent = message;
+            errorEl.classList.add('show');
+
+            setTimeout(() => {
+                hideError();
+            }, 5000);
+        }
+
+        function hideError() {
+            const errorEl = document.getElementById('errorMessage');
+            errorEl.classList.remove('show');
+        }
+
+        function showPaymentReceivedNotification(paymentData) {
+            // Create a special notification for payment received
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(45deg, #00ff88, #00cc6a);
+                color: white;
+                padding: 20px;
+                border-radius: 12px;
+                box-shadow: 0 0 30px rgba(0, 255, 136, 0.5);
+                z-index: 1000;
+                max-width: 350px;
+                animation: slideIn 0.5s ease-out;
+                border: 2px solid #00ff88;
+            `;
+
+            const calculation = paymentData.calculation;
+            const totalAmount = calculation?.totalAmount || paymentData.amount;
+            const baseAmount = calculation?.baseAmount || (totalAmount * 0.91); // Approximate base if tip is 10%
+            const tip = calculation?.tip || (totalAmount * 0.09); // Approximate tip if 10%
+
+            notification.innerHTML = `
+                <div style="font-size: 18px; font-weight: bold; margin-bottom: 10px;">
+                    💰 Payment Received!
+                </div>
+                <div style="margin-bottom: 8px;">
+                    <strong>Base Amount:</strong> ${baseAmount.toFixed(2)}
+                </div>
+                <div style="margin-bottom: 8px;">
+                    <strong>Tip (10%):</strong> ${tip.toFixed(2)}
+                </div>
+                <div style="margin-bottom: 12px; font-size: 16px; font-weight: bold;">
+                    <strong>Total:</strong> ${totalAmount.toFixed(2)}
+                </div>
+                <div style="font-size: 14px; opacity: 0.9;">
+                    You will receive this amount from Opul within 24 hours.
+                </div>
+            `;
+
+            document.body.appendChild(notification);
+
+            // Remove after 10 seconds
+            setTimeout(() => {
+                notification.remove();
+            }, 10000);
+
+            // Play success sound
+            playPaymentSuccessSound();
+        }
+
+        function playPaymentSuccessSound() {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+                // Create a series of ascending tones for success
+                const frequencies = [523.25, 659.25, 783.99]; // C5, E5, G5
+
+                frequencies.forEach((freq, index) => {
+                    setTimeout(() => {
+                        const oscillator = audioContext.createOscillator();
+                        const gainNode = audioContext.createGain();
+
+                        oscillator.connect(gainNode);
+                        gainNode.connect(audioContext.destination);
+
+                        oscillator.frequency.value = freq;
+                        oscillator.type = 'sine';
+
+                        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+
+                        oscillator.start(audioContext.currentTime);
+                        oscillator.stop(audioContext.currentTime + 0.3);
+                    }, index * 150);
+                });
+            } catch (error) {
+                console.log('Payment success sound not available');
+            }
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function () {
+            const messageForm = document.getElementById('messageForm');
+            const messageInput = document.getElementById('messageInput');
+            let typingTimer = null;
+
+            // Auto-resize textarea
+            messageInput.addEventListener('input', function () {
+                this.style.height = '48px';
+                this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+
+                emitTyping();
+
+                clearTimeout(typingTimer);
+                typingTimer = setTimeout(() => {
+                    emitStoppedTyping();
+                }, 1000);
+            });
+
+            // Handle form submission
+            messageForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                const message = messageInput.value.trim();
+
+                if (message) {
+                    emitStoppedTyping();
+                    clearTimeout(typingTimer);
+
+                    sendMessage(message);
+                    messageInput.value = '';
+                    messageInput.style.height = '48px';
+                }
+            });
+
+            // Close modal when clicking outside
+            document.getElementById('confirmModal').addEventListener('click', function (e) {
+                if (e.target === this) {
+                    closeConfirmModal();
+                }
+            });
+
+            // Close pay driver modal when clicking outside
+            document.getElementById('payDriverModal').addEventListener('click', function (e) {
+                if (e.target === this) {
+                    closePayDriverModal();
+                }
+            });
+        });
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function () {
+            if (socket) {
+                socket.disconnect();
+            }
+        });
+
+        // Prevent accidental refresh
+        window.addEventListener('keydown', function (e) {
+            if (e.key === 'F5' || (e.ctrlKey && e.key === 'r')) {
+                e.preventDefault();
+                location.reload();
+            }
+        });
+    </script>
+</body>
+
+</html>

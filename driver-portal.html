@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Driver Portal - Opul</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap');
+
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: 'Orbitron', sans-serif;
+      background: radial-gradient(circle at center, #0b0c2a, #050517);
+      color: white;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .logo {
+      font-size: 48px;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 30px;
+      background: linear-gradient(45deg, #00f0ff, #a18cd1, #fbc2eb);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 30px rgba(0, 240, 255, 0.5);
+    }
+
+    .back-button {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      text-decoration: none;
+      display: inline-block;
+      transition: all 0.3s ease;
+      margin-bottom: 20px;
+    }
+
+    .back-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+    }
+
+    .form-container {
+      background: rgba(11, 12, 42, 0.8);
+      border: 2px solid #00f0ff;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 0 30px rgba(0, 240, 255, 0.3);
+      backdrop-filter: blur(20px);
+    }
+
+    .form-title {
+      text-align: center;
+      font-size: 24px;
+      color: #00f0ff;
+      margin-bottom: 30px;
+    }
+
+    .input-group {
+      margin: 15px 0;
+    }
+
+    .input-field, .select-field {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid #00f0ff;
+      padding: 15px;
+      background-color: #0b0c2a;
+      color: #00f0ff;
+      font-size: 16px;
+      box-shadow: 0 0 8px #00f0ff66;
+      outline: none;
+      box-sizing: border-box;
+      font-family: 'Orbitron', sans-serif;
+    }
+
+    .input-field::placeholder {
+      color: rgba(0, 240, 255, 0.6);
+    }
+
+    .button {
+      width: 100%;
+      background: linear-gradient(45deg, 
+        rgba(138, 43, 226, 0.4), 
+        rgba(75, 0, 130, 0.4), 
+        rgba(0, 191, 255, 0.4), 
+        rgba(147, 0, 211, 0.4), 
+        rgba(0, 255, 255, 0.4));
+      background-size: 400% 400%;
+      border: 2px solid transparent;
+      background-clip: padding-box;
+      position: relative;
+      color: white;
+      font-weight: bold;
+      font-size: 18px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 
+        0 0 20px rgba(138, 43, 226, 0.5),
+        0 0 40px rgba(0, 191, 255, 0.3),
+        inset 0 0 20px rgba(255, 255, 255, 0.1);
+      text-shadow: 
+        0 0 10px rgba(255, 255, 255, 0.8),
+        0 0 20px rgba(138, 43, 226, 0.6);
+      border-radius: 25px;
+      animation: holographic 3s ease-in-out infinite;
+      padding: 15px;
+      margin: 20px 0;
+      font-family: 'Orbitron', sans-serif;
+    }
+
+    .button::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      background: linear-gradient(45deg, 
+        #8a2be2, #4b0082, #00bfff, #9300d3, #00ffff, #da70d6);
+      background-size: 400% 400%;
+      border-radius: 25px;
+      z-index: -1;
+      animation: holographic 3s ease-in-out infinite;
+    }
+
+    .button:hover {
+      transform: translateY(-2px);
+      box-shadow: 
+        0 0 30px rgba(138, 43, 226, 0.7),
+        0 0 60px rgba(0, 191, 255, 0.5),
+        inset 0 0 30px rgba(255, 255, 255, 0.2);
+      animation-duration: 1.5s;
+    }
+
+    .button:hover::before {
+      animation-duration: 1.5s;
+    }
+
+    .button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    @keyframes holographic {
+      0%, 100% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+    }
+
+    .toggle-link {
+      text-align: center;
+      margin: 20px 0;
+      color: #a18cd1;
+      cursor: pointer;
+      text-decoration: underline;
+      transition: color 0.3s ease;
+    }
+
+    .toggle-link:hover {
+      color: #00f0ff;
+    }
+
+    .form-message {
+      margin: 20px 0;
+      padding: 15px;
+      border-radius: 12px;
+      text-align: center;
+      display: none;
+    }
+
+    .success {
+      background-color: rgba(0, 255, 0, 0.1);
+      border: 1px solid #00ff00;
+      color: #00ff00;
+    }
+
+    .error {
+      background-color: rgba(255, 0, 0, 0.1);
+      border: 1px solid #ff0000;
+      color: #ff0000;
+    }
+
+    .info {
+      background-color: rgba(0, 240, 255, 0.1);
+      border: 1px solid #00f0ff;
+      color: #00f0ff;
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      margin: 20px 0;
+    }
+
+    .spinner {
+      border: 3px solid rgba(0, 240, 255, 0.3);
+      border-radius: 50%;
+      border-top: 3px solid #00f0ff;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 15px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .form-section {
+      display: block;
+    }
+
+    .form-section.hidden {
+      display: none;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 15px;
+    }
+
+    .input-row .input-field {
+      flex: 1;
+    }
+
+    .label {
+      display: block;
+      color: #a18cd1;
+      font-size: 14px;
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
+
+    .rate-input {
+      position: relative;
+    }
+
+    .rate-input::before {
+      content: '$';
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #00f0ff;
+      font-weight: bold;
+      z-index: 1;
+    }
+
+    .rate-input .input-field {
+      padding-left: 35px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">OPUL</div>
+    
+    <a href="Index.html" class="back-button">← Back to Home</a>
+
+    <div class="form-container">
+      <!-- Login Form -->
+      <div class="form-section" id="loginForm">
+        <div class="form-title">Driver Login</div>
+        
+        <div class="input-group">
+          <label class="label">Email Address</label>
+          <input type="email" class="input-field" id="loginEmail" placeholder="Enter your email" required>
+        </div>
+        
+        <div class="input-group">
+          <label class="label">Vehicle Plate (Alternative Login)</label>
+          <input type="text" class="input-field" id="loginPlate" placeholder="Optional: ABC-123">
+          <small style="color: #888; font-size: 12px;">You can login with either email or vehicle plate</small>
+        </div>
+
+        <button class="button" id="loginBtn" onclick="loginDriver()">🚗 Login as Driver</button>
+        
+        <div class="toggle-link" onclick="showRegistration()">
+          New driver? Register here →
+        </div>
+      </div>
+
+      <!-- Registration Form -->
+      <div class="form-section hidden" id="registrationForm">
+        <div class="form-title">Driver Registration</div>
+        
+        <div class="input-group">
+          <label class="label">Full Name *</label>
+          <input type="text" class="input-field" id="regName" placeholder="John Doe" required>
+        </div>
+        
+        <div class="input-row">
+          <div class="input-group">
+            <label class="label">Email *</label>
+            <input type="email" class="input-field" id="regEmail" placeholder="john@example.com" required>
+          </div>
+          <div class="input-group">
+            <label class="label">Phone *</label>
+            <input type="tel" class="input-field" id="regPhone" placeholder="+57-300-123-4567" required>
+          </div>
+        </div>
+        
+        <div class="input-group">
+          <label class="label">Vehicle Type *</label>
+          <select class="select-field" id="regVehicleType" required>
+            <option value="">Select Vehicle Type</option>
+            <option value="sedan">Sedan</option>
+            <option value="suv">SUV</option>
+            <option value="truck">Truck</option>
+            <option value="motorcycle">Motorcycle</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        
+        <div class="input-row">
+          <div class="input-group">
+            <label class="label">Vehicle Model *</label>
+            <input type="text" class="input-field" id="regVehicleModel" placeholder="Toyota Corolla 2021" required>
+          </div>
+          <div class="input-group">
+            <label class="label">Vehicle Plate *</label>
+            <input type="text" class="input-field" id="regVehiclePlate" placeholder="ABC-123" required>
+          </div>
+        </div>
+        
+        <div class="input-group">
+          <label class="label">Hourly Rate (USD) *</label>
+          <div class="rate-input">
+            <input type="number" class="input-field" id="regHourlyRate" placeholder="15" min="1" step="0.50" required>
+          </div>
+          <small style="color: #888; font-size: 12px;">Set your hourly rate. You can change this later.</small>
+        </div>
+
+        <button class="button" id="registerBtn" onclick="registerDriver()">🚙 Register as Driver</button>
+        
+        <div class="toggle-link" onclick="showLogin()">
+          Already have an account? Login here →
+        </div>
+      </div>
+
+      <!-- Loading indicator -->
+      <div class="loading" id="loadingIndicator">
+        <div class="spinner"></div>
+        <p>Processing...</p>
+      </div>
+
+      <!-- Message area -->
+      <div class="form-message" id="formMessage"></div>
+    </div>
+  </div>
+
+  <script>
+    // Configuration
+    const API_BASE = 'http://localhost:5000/api';
+
+    // Form switching
+    function showRegistration() {
+      document.getElementById('loginForm').classList.add('hidden');
+      document.getElementById('registrationForm').classList.remove('hidden');
+      hideMessage();
+    }
+
+    function showLogin() {
+      document.getElementById('registrationForm').classList.add('hidden');
+      document.getElementById('loginForm').classList.remove('hidden');
+      hideMessage();
+    }
+
+    // Driver login
+    async function loginDriver() {
+      const email = document.getElementById('loginEmail').value.trim();
+      const vehiclePlate = document.getElementById('loginPlate').value.trim();
+
+      if (!email && !vehiclePlate) {
+        showMessage('Please enter either email or vehicle plate to login', 'error');
+        return;
+      }
+
+      showLoading('Logging in...');
+
+      try {
+        const response = await fetch(`${API_BASE}/auth/login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ email, vehiclePlate })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          // Store auth data
+          localStorage.setItem('driverToken', data.data.token);
+          localStorage.setItem('driverInfo', JSON.stringify(data.data.driver));
+          
+          showMessage('Login successful! Redirecting to dashboard...', 'success');
+          
+          // Redirect to driver dashboard
+          setTimeout(() => {
+            window.location.href = 'driver-dashboard.html';
+          }, 2000);
+        } else {
+          throw new Error(data.message);
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+        showMessage(`Login failed: ${error.message}`, 'error');
+      } finally {
+        hideLoading();
+      }
+    }
+
+    // Driver registration
+    async function registerDriver() {
+      // Get form data
+      const formData = {
+        name: document.getElementById('regName').value.trim(),
+        email: document.getElementById('regEmail').value.trim(),
+        phone: document.getElementById('regPhone').value.trim(),
+        vehicleType: document.getElementById('regVehicleType').value,
+        vehicleModel: document.getElementById('regVehicleModel').value.trim(),
+        vehiclePlate: document.getElementById('regVehiclePlate').value.trim(),
+        hourlyRate: parseFloat(document.getElementById('regHourlyRate').value)
+      };
+
+      // Validation
+      if (!formData.name || !formData.email || !formData.phone || 
+          !formData.vehicleType || !formData.vehicleModel || 
+          !formData.vehiclePlate || !formData.hourlyRate) {
+        showMessage('Please fill in all required fields', 'error');
+        return;
+      }
+
+      if (formData.hourlyRate < 1) {
+        showMessage('Hourly rate must be at least $1', 'error');
+        return;
+      }
+
+      // Email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email)) {
+        showMessage('Please enter a valid email address', 'error');
+        return;
+      }
+
+      // Phone validation (basic)
+      if (formData.phone.length < 10) {
+        showMessage('Please enter a valid phone number', 'error');
+        return;
+      }
+
+      showLoading('Registering driver...');
+
+      try {
+        const response = await fetch(`${API_BASE}/auth/register`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(formData)
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          // Store auth data
+          localStorage.setItem('driverToken', data.data.token);
+          localStorage.setItem('driverInfo', JSON.stringify(data.data.driver));
+          
+          showMessage('Registration successful! Welcome to Opul! Redirecting to dashboard...', 'success');
+          
+          // Redirect to driver dashboard
+          setTimeout(() => {
+            window.location.href = 'driver-dashboard.html';
+          }, 2000);
+        } else {
+          throw new Error(data.message);
+        }
+      } catch (error) {
+        console.error('Registration error:', error);
+        showMessage(`Registration failed: ${error.message}`, 'error');
+      } finally {
+        hideLoading();
+      }
+    }
+
+    // Utility functions
+    function showLoading(message) {
+      document.getElementById('loadingIndicator').style.display = 'block';
+      document.getElementById('loadingIndicator').querySelector('p').textContent = message;
+      document.getElementById('loginBtn').disabled = true;
+      document.getElementById('registerBtn').disabled = true;
+    }
+
+    function hideLoading() {
+      document.getElementById('loadingIndicator').style.display = 'none';
+      document.getElementById('loginBtn').disabled = false;
+      document.getElementById('registerBtn').disabled = false;
+    }
+
+    function showMessage(text, type) {
+      const messageEl = document.getElementById('formMessage');
+      messageEl.innerHTML = text.replace(/\n/g, '<br>');
+      messageEl.className = `form-message ${type}`;
+      messageEl.style.display = 'block';
+    }
+
+    function hideMessage() {
+      document.getElementById('formMessage').style.display = 'none';
+    }
+
+    // Check if driver is already logged in
+    window.addEventListener('load', function() {
+      const token = localStorage.getItem('driverToken');
+      const driverInfo = localStorage.getItem('driverInfo');
+      
+      if (token && driverInfo) {
+        showMessage('You are already logged in. Redirecting to dashboard...', 'info');
+        setTimeout(() => {
+          window.location.href = 'driver-dashboard.html';
+        }, 2000);
+      }
+    });
+
+    // Add Enter key support
+    document.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        const loginVisible = !document.getElementById('loginForm').classList.contains('hidden');
+        if (loginVisible) {
+          loginDriver();
+        } else {
+          registerDriver();
+        }
+      }
+    });
+
+    // Auto-format phone number
+    document.getElementById('regPhone').addEventListener('input', function(e) {
+      let value = e.target.value.replace(/\D/g, '');
+      if (value.length >= 10) {
+        value = value.replace(/(\d{2})(\d{3})(\d{3})(\d{4})/, '+$1-$2-$3-$4');
+      }
+      e.target.value = value;
+    });
+
+    // Auto-format vehicle plate
+    document.getElementById('regVehiclePlate').addEventListener('input', function(e) {
+      e.target.value = e.target.value.toUpperCase();
+    });
+
+    document.getElementById('loginPlate').addEventListener('input', function(e) {
+      e.target.value = e.target.value.toUpperCase();
+    });
+  </script>
+</body>
+</html>

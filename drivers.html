@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Available Drivers - Opul</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap');
+
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: 'Orbitron', sans-serif;
+      background: radial-gradient(circle at center, #0b0c2a, #050517);
+      color: white;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .logo {
+      font-size: 48px;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 30px;
+      background: linear-gradient(45deg, #00f0ff, #a18cd1, #fbc2eb);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 30px rgba(0, 240, 255, 0.5);
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .back-button {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      text-decoration: none;
+      display: inline-block;
+      transition: all 0.3s ease;
+      margin-bottom: 20px;
+    }
+
+    .back-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+    }
+
+    .ride-info {
+      background: rgba(11, 12, 42, 0.8);
+      border: 2px solid #00f0ff;
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 30px;
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+    }
+
+    .timer-section {
+      background: rgba(255, 69, 0, 0.1);
+      border: 2px solid #ff4500;
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 30px;
+      text-align: center;
+      box-shadow: 0 0 20px rgba(255, 69, 0, 0.3);
+    }
+
+    .timer-display {
+      font-size: 48px;
+      font-weight: bold;
+      color: #ff4500;
+      margin: 20px 0;
+      text-shadow: 0 0 10px rgba(255, 69, 0, 0.5);
+    }
+
+    .timer-warning {
+      color: #ff6b6b;
+      font-size: 18px;
+      margin-top: 10px;
+    }
+
+    .timer-expired {
+      background: rgba(255, 0, 0, 0.2);
+      border-color: #ff0000;
+      color: #ff0000;
+    }
+
+    .timer-expired .timer-display {
+      color: #ff0000;
+    }
+
+    .status-message {
+      text-align: center;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 12px;
+      font-size: 18px;
+      display: none;
+    }
+
+    .waiting {
+      background: rgba(0, 240, 255, 0.1);
+      border: 1px solid #00f0ff;
+      color: #00f0ff;
+    }
+
+    .success {
+      background: rgba(0, 255, 0, 0.1);
+      border: 1px solid #00ff00;
+      color: #00ff00;
+    }
+
+    .error {
+      background: rgba(255, 0, 0, 0.1);
+      border: 1px solid #ff0000;
+      color: #ff0000;
+    }
+
+    .info {
+      background: rgba(0, 240, 255, 0.1);
+      border: 1px solid #00f0ff;
+      color: #00f0ff;
+    }
+
+    .drivers-grid {
+      display: grid;
+      gap: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+
+    .driver-card {
+      background: rgba(11, 12, 42, 0.8);
+      border: 1px solid #a18cd1;
+      border-radius: 15px;
+      padding: 20px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .driver-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.1), transparent);
+      transition: left 0.5s;
+    }
+
+    .driver-card:hover::before {
+      left: 100%;
+    }
+
+    .driver-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 0 25px rgba(161, 140, 209, 0.4);
+      border-color: #00f0ff;
+    }
+
+    .driver-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .driver-name {
+      font-size: 20px;
+      font-weight: bold;
+      color: #00f0ff;
+    }
+
+    .driver-rating {
+      color: #ffd700;
+      font-size: 16px;
+    }
+
+    .vehicle-info {
+      margin: 15px 0;
+      color: #a18cd1;
+    }
+
+    .vehicle-type {
+      display: inline-block;
+      background: rgba(138, 43, 226, 0.3);
+      padding: 5px 10px;
+      border-radius: 15px;
+      font-size: 12px;
+      color: #fbc2eb;
+      margin-right: 10px;
+    }
+
+    .price-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 15px 0;
+      padding: 10px;
+      background: rgba(0, 240, 255, 0.1);
+      border-radius: 8px;
+    }
+
+    .hourly-rate {
+      font-size: 18px;
+      font-weight: bold;
+      color: #00ff00;
+    }
+
+    .total-cost {
+      font-size: 16px;
+      color: #00f0ff;
+    }
+
+    .accept-button {
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(45deg, rgba(0, 255, 0, 0.6), rgba(0, 200, 0, 0.6));
+      border: 2px solid #00ff00;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 15px;
+    }
+
+    .accept-button:hover {
+      background: linear-gradient(45deg, rgba(0, 255, 0, 0.8), rgba(0, 200, 0, 0.8));
+      transform: translateY(-2px);
+      box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+    }
+
+    .accept-button:disabled {
+      background: rgba(128, 128, 128, 0.3);
+      border-color: #666;
+      color: #999;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+    }
+
+    .spinner {
+      border: 3px solid rgba(0, 240, 255, 0.3);
+      border-radius: 50%;
+      border-top: 3px solid #00f0ff;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .no-offers {
+      text-align: center;
+      padding: 40px;
+      color: #a18cd1;
+      font-size: 18px;
+    }
+
+    .pulse {
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    .offer-badge {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+      color: white;
+      padding: 5px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: bold;
+      animation: bounce 1s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+
+    .refresh-button {
+      background: rgba(0, 240, 255, 0.2);
+      border: 1px solid #00f0ff;
+      color: #00f0ff;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      margin: 20px auto;
+      display: block;
+      transition: all 0.3s ease;
+    }
+
+    .refresh-button:hover {
+      background: rgba(0, 240, 255, 0.3);
+      transform: translateY(-2px);
+    }
+  </style>
+  <!-- Socket.IO -->
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">OPUL</div>
+    
+    <a href="Index.html" class="back-button">← Back to Home</a>
+
+    <div class="header">
+      <h2 style="color: #00f0ff; margin: 0;">Available Drivers</h2>
+    </div>
+
+    <div class="ride-info" id="rideInfo">
+      <h3 style="color: #a18cd1; margin-top: 0;">Your Ride Request</h3>
+      <p><strong>Pickup:</strong> <span id="pickupLocation">Loading...</span></p>
+      <p><strong>Duration:</strong> <span id="rideDuration">Loading...</span></p>
+      <p><strong>Request ID:</strong> <span id="requestId">Loading...</span></p>
+      <p><strong>Status:</strong> <span id="rideStatus" style="color: #00ff00;">Waiting for drivers</span></p>
+    </div>
+
+    <!-- Timer Section -->
+    <div class="timer-section" id="timerSection" style="display: none;">
+      <h3 style="margin-top: 0;">⏰ Driver Selection Timer</h3>
+      <div class="timer-display" id="timerDisplay">3:00</div>
+      <p>You have <strong>3 minutes</strong> to select a driver</p>
+      <p class="timer-warning" id="timerWarning" style="display: none;">⚠️ Time is running out! Select a driver soon or your credit will be refunded.</p>
+    </div>
+
+    <div class="status-message waiting" id="statusMessage">
+      <div class="pulse">🚗 Waiting for driver offers...</div>
+      <p style="font-size: 14px; margin-top: 10px;">Drivers in your area will see your request and can make offers</p>
+    </div>
+
+    <!-- Payment Required Message -->
+    <div class="status-message error" id="paymentRequired" style="display: none;">
+      <h3>💳 Payment Required</h3>
+      <p>You need 1 credit to select a driver. Please pay $10 to get 1 credit.</p>
+      <div style="margin: 20px 0;">
+        <p><strong>Current Credits:</strong> <span id="currentCredits">0</span></p>
+        <p><strong>Required Credits:</strong> 1</p>
+      </div>
+      <div style="display: flex; gap: 15px; justify-content: center; margin-top: 20px;">
+        <button class="accept-button" style="width: auto; padding: 10px 20px;" onclick="payWithPayPal()">
+          Pay with PayPal
+        </button>
+        <button class="accept-button" style="width: auto; padding: 10px 20px;" onclick="payWithStripe()">
+          Pay with Stripe
+        </button>
+      </div>
+      <div style="margin-top: 20px;">
+        <p style="font-size: 14px; opacity: 0.7;">Already paid? <button style="background: none; border: 1px solid #00f0ff; color: #00f0ff; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px;" onclick="checkPaymentAndRefresh()">Check Payment Status</button></p>
+      </div>
+    </div>
+
+    <button class="refresh-button" onclick="loadDriverOffers()">🔄 Refresh Offers</button>
+
+    <div class="loading" id="loadingIndicator">
+      <div class="spinner"></div>
+      <p>Loading available drivers...</p>
+    </div>
+
+    <div class="drivers-grid" id="driversGrid"></div>
+
+    <div class="no-offers" id="noOffers" style="display: none;">
+      <h3>No driver offers yet</h3>
+      <p>Don't worry! Drivers are being notified about your request.</p>
+      <p>This page will automatically update when drivers make offers.</p>
+    </div>
+  </div>
+
+  <script>
+    // Configuration
+    const API_BASE = 'http://localhost:5000/api';
+    
+    // Get URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const requestId = urlParams.get('requestId');
+    const paymentCompleted = urlParams.get('payment') === 'completed';
+
+    // Global variables
+    let socket = null;
+    let rideData = null;
+    let currentOffers = [];
+    let userCredits = 0;
+    let hasCheckedCredits = false;
+    let timerInterval = null;
+    let timerEndTime = null;
+    let isTimerActive = false;
+
+    // Initialize page
+    window.addEventListener('load', async function() {
+      if (!requestId) {
+        showStatusMessage('Invalid request. Please start from the ride request page.', 'error');
+        setTimeout(() => window.location.href = 'Index.html', 3000);
+        return;
+      }
+
+      // Check if user just completed payment
+      if (paymentCompleted) {
+        showStatusMessage('Payment completed! Loading driver offers...', 'success');
+        // Force refresh credits and show offers
+        await initializePageAfterPayment();
+      } else {
+        await initializePage();
+      }
+    });
+
+    async function initializePage() {
+      // Initialize Socket.IO connection
+      try {
+        socket = io('http://localhost:5000');
+        setupSocketListeners();
+      } catch (error) {
+        console.warn('Socket.IO connection failed:', error);
+      }
+
+      // Load ride details
+      await loadRideDetails();
+      
+      // Check user credits first to determine flow
+      await checkUserCredits();
+      
+      if (userCredits >= 1) {
+        // User has credits - show driver offers directly with timer
+        await loadDriverOffers();
+        await checkExistingTimer();
+        // Start timer immediately when user has credits and can see offers
+        await startDriverSelectionTimerIfNeeded();
+      } else {
+        // User has zero credits - show payment options first
+        showPaymentRequired();
+      }
+      
+      // Hide loading indicator
+      document.getElementById('loadingIndicator').style.display = 'none';
+    }
+
+    async function initializePageAfterPayment() {
+      // Initialize Socket.IO connection
+      try {
+        socket = io('http://localhost:5000');
+        setupSocketListeners();
+      } catch (error) {
+        console.warn('Socket.IO connection failed:', error);
+      }
+
+      // Load ride details
+      await loadRideDetails();
+      
+      // Give some time for payment to be processed in backend
+      showStatusMessage('Payment completed! Refreshing your credit balance...', 'success');
+      
+      // Wait 2 seconds, then refresh credits
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Force refresh credits (user just paid)
+      await checkUserCredits();
+      
+      if (userCredits >= 1) {
+        // User has credits now - show driver offers with timer
+        showStatusMessage('Credit updated! Loading driver offers...', 'success');
+        await loadDriverOffers();
+        await checkExistingTimer();
+        // Start timer immediately after payment completion
+        await startDriverSelectionTimerIfNeeded();
+      } else {
+        // Still no credits - something went wrong
+        showStatusMessage('Payment processed but credits not updated yet. Please refresh the page in a moment.', 'error');
+        // Still show payment options as fallback
+        setTimeout(() => {
+          showPaymentRequired();
+        }, 3000);
+      }
+      
+      // Hide loading indicator
+      document.getElementById('loadingIndicator').style.display = 'none';
+    }
+
+    function setupSocketListeners() {
+      socket.on('connect', () => {
+        console.log('Connected to server');
+        socket.emit('join-ride', requestId);
+      });
+
+      socket.on('new-driver-offer', (data) => {
+        if (data.requestId === requestId) {
+          console.log('New driver offer received:', data);
+          loadDriverOffers(); // Refresh the offers
+          showNotification(`New offer from ${data.driver.name}!`);
+        }
+      });
+
+      socket.on('ride-status-changed', (data) => {
+        updateRideStatus(data.status);
+      });
+
+      socket.on('timer-started', (data) => {
+        if (data.requestId === requestId) {
+          console.log('Timer started:', data);
+          startTimer(data.endTime);
+        }
+      });
+
+      socket.on('timer-expired', (data) => {
+        if (data.requestId === requestId) {
+          console.log('Timer expired:', data);
+          handleTimerExpiry(data.message);
+        }
+      });
+
+      socket.on('disconnect', () => {
+        console.log('Disconnected from server');
+      });
+    }
+
+    async function loadRideDetails() {
+      try {
+        const response = await fetch(`${API_BASE}/rides/${requestId}`);
+        const data = await response.json();
+        
+        if (data.success) {
+          rideData = data.data;
+          updateRideDisplay();
+        } else {
+          throw new Error(data.message);
+        }
+      } catch (error) {
+        console.error('Error loading ride details:', error);
+        showStatusMessage('Error loading ride details', 'error');
+      }
+    }
+
+    async function loadDriverOffers() {
+      console.log('🔄 loadDriverOffers called');
+      try {
+        const response = await fetch(`${API_BASE}/rides/${requestId}`);
+        const data = await response.json();
+        console.log('📡 API Response:', data);
+        
+        if (data.success) {
+          currentOffers = data.data.driverOffers || [];
+          console.log('🚗 Loaded offers:', currentOffers);
+          rideData = data.data; // Update ride data as well
+          displayDriverOffers();
+        } else {
+          throw new Error(data.message);
+        }
+      } catch (error) {
+        console.error('Error loading driver offers:', error);
+        showStatusMessage('Error loading driver offers', 'error');
+      }
+    }
+
+    function updateRideDisplay() {
+      if (!rideData) return;
+
+      document.getElementById('requestId').textContent = rideData.requestId;
+      document.getElementById('pickupLocation').textContent = rideData.pickupLocation.address;
+      document.getElementById('rideDuration').textContent = `${rideData.duration} hour(s)`;
+      
+      updateRideStatus(rideData.status);
+    }
+
+    async function checkUserCredits() {
+      console.log('💳 checkUserCredits called to determine flow');
+      
+      if (!rideData || !rideData.clientInfo) {
+        console.error('No ride data available for credit check');
+        userCredits = 0;
+        return;
+      }
+
+      try {
+        const params = new URLSearchParams();
+        if (rideData.clientInfo.email) params.append('email', rideData.clientInfo.email);
+        if (rideData.clientInfo.phone) params.append('phone', rideData.clientInfo.phone);
+        
+        console.log('🚀 Checking credits:', {
+          email: rideData.clientInfo.email,
+          phone: rideData.clientInfo.phone
+        });
+        
+        const response = await fetch(`${API_BASE}/credits?${params}`);
+        const data = await response.json();
+        console.log('💵 Credits response:', data);
+        
+        if (data.success) {
+          userCredits = data.data.totalCredits;
+          document.getElementById('currentCredits').textContent = userCredits;
+          console.log('💰 User has', userCredits, 'credits');
+          hasCheckedCredits = true;
+        } else {
+          console.error('Error checking credits:', data.message);
+          userCredits = 0;
+        }
+      } catch (error) {
+        console.error('Error checking credits:', error);
+        userCredits = 0;
+      }
+    }
+
+    function showPaymentRequired() {
+      document.getElementById('paymentRequired').style.display = 'block';
+      document.getElementById('statusMessage').style.display = 'none';
+      document.getElementById('driversGrid').style.display = 'none';
+      document.getElementById('noOffers').style.display = 'none';
+      document.querySelector('.refresh-button').style.display = 'none';
+    }
+
+    function hidePaymentRequired() {
+      document.getElementById('paymentRequired').style.display = 'none';
+      document.querySelector('.refresh-button').style.display = 'block';
+    }
+
+    function updateRideStatus(status) {
+      const statusEl = document.getElementById('rideStatus');
+      const statusMap = {
+        'pending': { text: 'Payment pending', color: '#ff6b6b' },
+        'active': { text: 'Waiting for drivers', color: '#00f0ff' },
+        'matched': { text: 'Driver accepted!', color: '#00ff00' },
+        'in_progress': { text: 'Ride in progress', color: '#ffd700' },
+        'completed': { text: 'Ride completed', color: '#00ff00' },
+        'cancelled': { text: 'Ride cancelled', color: '#ff6b6b' },
+        'expired': { text: 'Selection time expired', color: '#ff0000' }
+      };
+
+      const statusInfo = statusMap[status] || { text: status, color: '#ffffff' };
+      statusEl.textContent = statusInfo.text;
+      statusEl.style.color = statusInfo.color;
+
+      // Handle status-specific actions
+      if (status === 'matched' || status === 'in_progress') {
+        // Redirect to chat page
+        setTimeout(() => {
+          window.location.href = `Chat.html?requestId=${requestId}&userType=client`;
+        }, 2000);
+        showStatusMessage('Driver accepted! Redirecting to chat...', 'success');
+      }
+    }
+
+    async function payWithPayPal() {
+      await processRidePayment('paypal');
+    }
+
+    async function payWithStripe() {
+      await processRidePayment('stripe');
+    }
+
+    async function processRidePayment(paymentMethod) {
+      try {
+        showStatusMessage('Creating payment...', 'info');
+        
+        // Create the payment request
+        const requestBody = {
+          requestId: requestId,
+          paymentMethod: paymentMethod
+        };
+        
+        // Only add payment type for service fee payments from drivers.html
+        // Don't override returnUrl - let backend handle proper URL construction with payment IDs
+        if (window.location.pathname.includes('drivers.html')) {
+          requestBody.paymentType = 'service_fee';
+        }
+        
+        console.log('💳 Creating payment with:', requestBody);
+        
+        const response = await fetch(`${API_BASE}/payments/create-ride-payment`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(requestBody)
+        });
+
+        const data = await response.json();
+        console.log('💳 Payment creation response:', data);
+        
+        if (data.success) {
+          // Redirect to payment
+          const paymentUrl = paymentMethod === 'stripe' ? data.data.checkoutUrl : data.data.approvalUrl;
+          console.log('🚀 Redirecting to payment:', paymentUrl);
+          window.location.href = paymentUrl;
+        } else {
+          throw new Error(data.message);
+        }
+      } catch (error) {
+        console.error('Payment error:', error);
+        showStatusMessage(`Payment failed: ${error.message}`, 'error');
+      }
+    }
+
+    // Start driver selection timer if needed (when offers are available)
+    async function startDriverSelectionTimerIfNeeded() {
+      console.log('⏰ Checking if timer should be started...');
+      
+      // Only start timer if:
+      // 1. User has credits
+      // 2. There are pending offers
+      // 3. Timer is not already active
+      // 4. Ride status allows selection
+      
+      if (userCredits >= 1 && currentOffers.length > 0 && !isTimerActive && rideData?.status !== 'matched') {
+        const pendingOffers = currentOffers.filter(offer => offer.status === 'pending');
+        
+        if (pendingOffers.length > 0) {
+          console.log('✅ Starting driver selection timer - user has credits and offers available');
+          
+          try {
+            const response = await fetch(`${API_BASE}/rides/${requestId}/start-timer`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              }
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+              console.log('⏰ Timer started successfully on backend');
+              startTimer(data.data.timer.endTime);
+            } else {
+              console.warn('⚠️ Failed to start timer on backend:', data.message);
+              // Still show local timer for 3 minutes
+              const endTime = new Date(Date.now() + 3 * 60 * 1000); // 3 minutes from now
+              startTimer(endTime);
+            }
+          } catch (error) {
+            console.error('❌ Error starting timer:', error);
+            // Fallback to local timer
+            const endTime = new Date(Date.now() + 3 * 60 * 1000);
+            startTimer(endTime);
+          }
+        }
+      } else {
+        console.log('⏸️ Timer not started:', {
+          hasCredits: userCredits >= 1,
+          hasOffers: currentOffers.length > 0,
+          timerActive: isTimerActive,
+          rideStatus: rideData?.status
+        });
+      }
+    }
+
+    async function checkExistingTimer() {
+      try {
+        const response = await fetch(`${API_BASE}/rides/${requestId}/timer-status`);
+        const data = await response.json();
+        
+        if (data.success && data.data.timer.isActive && !data.data.timer.hasExpired) {
+          // Timer is active, start the visual countdown
+          startTimer(data.data.timer.endTime);
+        }
+      } catch (error) {
+        console.error('Error checking timer status:', error);
+      }
+    }
+
+    // Start driver selection timer (kept for compatibility but timer should already be running)
+    async function startDriverSelectionTimer() {
+      console.log('⚠️ startDriverSelectionTimer called - timer should already be active via startDriverSelectionTimerIfNeeded');
+      // Check existing timer instead of starting new one
+      await checkExistingTimer();
+    }
+
+    // Start visual timer countdown
+    function startTimer(endTime) {
+      timerEndTime = new Date(endTime);
+      isTimerActive = true;
+      
+      // Show timer section
+      document.getElementById('timerSection').style.display = 'block';
+      
+      // Update timer every second
+      timerInterval = setInterval(updateTimerDisplay, 1000);
+      
+      // Initial update
+      updateTimerDisplay();
+    }
+
+    // Update timer display
+    function updateTimerDisplay() {
+      if (!isTimerActive || !timerEndTime) {
+        return;
+      }
+
+      const now = new Date();
+      const timeRemaining = Math.max(0, timerEndTime - now);
+      
+      if (timeRemaining <= 0) {
+        // Timer expired
+        clearInterval(timerInterval);
+        isTimerActive = false;
+        return;
+      }
+
+      // Calculate minutes and seconds
+      const minutes = Math.floor(timeRemaining / (1000 * 60));
+      const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
+      
+      // Format display
+      const display = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+      document.getElementById('timerDisplay').textContent = display;
+      
+      // Show warning when under 1 minute
+      const warningEl = document.getElementById('timerWarning');
+      if (timeRemaining <= 60000) { // 1 minute
+        warningEl.style.display = 'block';
+        document.getElementById('timerSection').style.borderColor = '#ff0000';
+      } else {
+        warningEl.style.display = 'none';
+      }
+    }
+
+    // Handle timer expiry
+    function handleTimerExpiry(message) {
+      clearInterval(timerInterval);
+      isTimerActive = false;
+      
+      // Update timer section to show expiry
+      const timerSection = document.getElementById('timerSection');
+      timerSection.classList.add('timer-expired');
+      document.getElementById('timerDisplay').textContent = 'EXPIRED';
+      
+      // Hide driver offers
+      document.getElementById('driversGrid').style.display = 'none';
+      document.querySelector('.refresh-button').style.display = 'none';
+      
+      // Show expiry message
+      showStatusMessage(message, 'error');
+      
+      // Redirect to home after 5 seconds
+      setTimeout(() => {
+        window.location.href = 'Index.html';
+      }, 5000);
+    }
+
+    function displayDriverOffers() {
+      const grid = document.getElementById('driversGrid');
+      const noOffersEl = document.getElementById('noOffers');
+      const statusMessageEl = document.getElementById('statusMessage');
+
+      console.log('🎯 displayDriverOffers called');
+      console.log('- currentOffers:', currentOffers);
+      console.log('- userCredits:', userCredits);
+      console.log('- hasCheckedCredits:', hasCheckedCredits);
+      console.log('- isTimerActive:', isTimerActive);
+      console.log('- rideData.status:', rideData?.status);
+
+      // Show offers - credit check is now handled in initialization
+
+      // Show the grid and refresh button
+      grid.style.display = 'grid';
+      hidePaymentRequired();
+
+      // Filter for pending offers
+      const pendingOffers = currentOffers.filter(offer => offer.status === 'pending');
+      console.log('📋 Pending offers:', pendingOffers);
+
+      if (pendingOffers.length === 0) {
+        console.log('📭 No pending offers found');
+        grid.innerHTML = '';
+        noOffersEl.style.display = 'block';
+        statusMessageEl.style.display = 'block';
+        return;
+      }
+
+      console.log('✅ Displaying', pendingOffers.length, 'pending offers');
+      noOffersEl.style.display = 'none';
+      statusMessageEl.style.display = 'none';
+      grid.innerHTML = '';
+
+      pendingOffers.forEach(offer => {
+        console.log('🚗 Creating card for driver:', offer.driver.name);
+        const driverCard = createDriverCard(offer);
+        grid.appendChild(driverCard);
+      });
+      
+      // Start timer when offers are displayed (if not already active)
+      if (!isTimerActive && userCredits >= 1) {
+        console.log('📅 Offers displayed - starting selection timer');
+        startDriverSelectionTimerIfNeeded();
+      }
+    }
+
+    function createDriverCard(offer) {
+      const card = document.createElement('div');
+      card.className = 'driver-card';
+
+      // Correct calculation: Driver earns hourly rate * hours
+      const driverEarnings = (offer.hourlyRate * rideData.duration).toFixed(2);
+      // Customer pays: driver earnings + 10% tip
+      const tip = (driverEarnings * 0.1).toFixed(2);
+      const totalPaid = (parseFloat(driverEarnings) + parseFloat(tip)).toFixed(2);
+
+      card.innerHTML = `
+        <div class="offer-badge">NEW OFFER</div>
+        <div class="driver-header">
+          <div class="driver-name">${offer.driver.name}</div>
+          <div class="driver-rating">⭐ ${offer.driver.rating}/5 (${offer.driver.totalRides || 0} rides)</div>
+        </div>
+        <div class="vehicle-info">
+          <span class="vehicle-type">${offer.driver.vehicleType.toUpperCase()}</span>
+          <span>${offer.driver.vehicleModel}</span>
+        </div>
+        <div class="price-info">
+          <div>
+            <div class="hourly-rate">${offer.hourlyRate}/hour</div>
+            <div style="font-size: 12px; color: #888;">For ${rideData.duration} hour(s)</div>
+          </div>
+          <div style="text-align: right;">
+            <div class="total-cost">Paid: ${totalPaid}</div>
+            <div style="font-size: 12px; color: #00ff00;">You earn: ${driverEarnings}</div>
+          </div>
+        </div>
+        <button class="accept-button" onclick="acceptDriver('${offer.driver._id}')">
+          🚗 Accept Driver
+        </button>
+      `;
+
+      return card;
+    }
+
+    async function acceptDriver(driverId) {
+      try {
+        console.log('🚗 User trying to accept driver:', driverId);
+        showStatusMessage('Checking credits and accepting driver...', 'info');
+        
+        // STEP 1: Check user credits FIRST (this is where credit check happens)
+        console.log('💳 Checking if user has credits for driver selection...');
+        await loadUserCredits();
+        
+        if (userCredits >= 1) {
+          // STEP 2A: User has credits - Start timer and accept driver
+          console.log('✅ User has', userCredits, 'credits - proceeding with driver acceptance');
+          await startTimerAndAcceptDriver(driverId);
+        } else {
+          // STEP 2B: User has 0 credits - Show payment modal
+          console.log('⚠️ User has 0 credits - showing payment modal');
+          showPaymentRequiredForDriverAcceptance(driverId);
+        }
+      } catch (error) {
+        console.error('Error in acceptDriver flow:', error);
+        showStatusMessage(`Error: ${error.message}`, 'error');
+      }
+    }
+    
+    function showPaymentRequiredForDriverAcceptance(driverId) {
+      console.log('💳 Showing payment modal for driver acceptance');
+      
+      // Store the driver ID for after payment
+      localStorage.setItem('pendingDriverAcceptance', driverId);
+      localStorage.setItem('pendingRequestId', requestId);
+      
+      // Show the payment modal
+      document.getElementById('paymentRequired').style.display = 'block';
+      document.getElementById('statusMessage').style.display = 'none';
+      document.getElementById('driversGrid').style.display = 'none';
+      document.getElementById('noOffers').style.display = 'none';
+      document.querySelector('.refresh-button').style.display = 'none';
+    }
+    
+    async function startTimerAndAcceptDriver(driverId) {
+      console.log('🚗 Accepting driver (timer should already be running):', driverId);
+      
+      try {
+        // Accept the driver (timer should already be active)
+        showStatusMessage('Accepting driver...', 'info');
+        
+        const response = await fetch(`${API_BASE}/rides/${requestId}/accept/${driverId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          showStatusMessage('Driver accepted! Credit deducted. Redirecting to chat...', 'success');
+          
+          // Stop timer
+          clearInterval(timerInterval);
+          isTimerActive = false;
+          document.getElementById('timerSection').style.display = 'none';
+          
+          // Disable all accept buttons
+          const buttons = document.querySelectorAll('.accept-button');
+          buttons.forEach(btn => {
+            btn.disabled = true;
+            btn.textContent = '✓ Driver Accepted';
+          });
+          
+          // Redirect to chat page after 2 seconds
+          setTimeout(() => {
+            window.location.href = `Chat.html?requestId=${requestId}&userType=client`;
+          }, 2000);
+        } else {
+          throw new Error(data.message);
+        }
+      } catch (error) {
+        console.error('Error accepting driver:', error);
+        showStatusMessage(`Failed to accept driver: ${error.message}`, 'error');
+      }
+    }
+
+    // Load user credits function (used during driver acceptance)
+    async function loadUserCredits() {
+      if (!rideData || !rideData.clientInfo) {
+        throw new Error('No client info available for credit check');
+      }
+
+      try {
+        const params = new URLSearchParams();
+        if (rideData.clientInfo.email) params.append('email', rideData.clientInfo.email);
+        if (rideData.clientInfo.phone) params.append('phone', rideData.clientInfo.phone);
+        
+        console.log('🚀 Loading user credits for driver acceptance...');
+        
+        const response = await fetch(`${API_BASE}/credits?${params}`);
+        const data = await response.json();
+        
+        if (data.success) {
+          userCredits = data.data.totalCredits;
+          document.getElementById('currentCredits').textContent = userCredits;
+          console.log('💰 User has', userCredits, 'credits');
+          return userCredits;
+        } else {
+          throw new Error(data.message || 'Failed to load credits');
+        }
+      } catch (error) {
+        console.error('Error loading credits:', error);
+        userCredits = 0;
+        return 0;
+      }
+    }
+
+    async function checkPaymentAndRefresh() {
+      showStatusMessage('Checking payment status...', 'info');
+      
+      try {
+        // Refresh credits
+        await checkUserCredits();
+        
+        if (userCredits >= 1) {
+          // User now has credits - show driver offers
+          showStatusMessage('Payment found! Loading driver offers...', 'success');
+          await loadDriverOffers();
+          await checkExistingTimer();
+          // Start timer if offers are available
+          await startDriverSelectionTimerIfNeeded();
+          hidePaymentRequired();
+        } else {
+          // Still no credits
+          showStatusMessage('No recent payment found. Please complete payment first.', 'error');
+        }
+      } catch (error) {
+        console.error('Error checking payment status:', error);
+        showStatusMessage('Error checking payment status. Please try again.', 'error');
+      }
+    }
+
+    function showStatusMessage(message, type) {
+      const messageEl = document.getElementById('statusMessage');
+      messageEl.innerHTML = message;
+      messageEl.className = `status-message ${type}`;
+      messageEl.style.display = 'block';
+    }
+
+    async function payWithPayPal() {
+      await processRidePayment('paypal');
+    }
+
+    async function payWithStripe() {
+      await processRidePayment('stripe');
+    }
+
+    async function processRidePayment(paymentMethod) {
+      try {
+        showStatusMessage('Creating payment...', 'info');
+        
+        // Create the payment request
+        const requestBody = {
+          requestId: requestId,
+          paymentMethod: paymentMethod
+        };
+        
+        // Only add returnUrl for service fee payments from drivers.html
+        if (window.location.pathname.includes('drivers.html')) {
+          requestBody.returnUrl = `${window.location.origin}/payment-success-service.html?requestId=${requestId}`;
+          requestBody.paymentType = 'service_fee';
+        }
+        
+        console.log('💳 Creating payment with:', requestBody);
+        
+        const response = await fetch(`${API_BASE}/payments/create-ride-payment`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(requestBody)
+        });
+
+        const data = await response.json();
+        console.log('💳 Payment creation response:', data);
+        
+        if (data.success) {
+          // Redirect to payment
+          const paymentUrl = paymentMethod === 'stripe' ? data.data.checkoutUrl : data.data.approvalUrl;
+          console.log('🚀 Redirecting to payment:', paymentUrl);
+          window.location.href = paymentUrl;
+        } else {
+          throw new Error(data.message);
+        }
+      } catch (error) {
+        console.error('Payment error:', error);
+        showStatusMessage(`Payment failed: ${error.message}`, 'error');
+      }
+    }
+
+    function showNotification(message) {
+      const notification = document.createElement('div');
+      notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(45deg, #00f0ff, #a18cd1);
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 20px rgba(0, 240, 255, 0.5);
+        z-index: 1000;
+        animation: slideIn 0.3s ease-out;
+      `;
+      notification.textContent = message;
+      
+      document.body.appendChild(notification);
+      
+      // Remove after 5 seconds
+      setTimeout(() => {
+        notification.remove();
+      }, 5000);
+    }
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', function() {
+      if (socket) {
+        socket.disconnect();
+      }
+      
+      if (timerInterval) {
+        clearInterval(timerInterval);
+      }
+    });
+  </script>
+</body>
+</html>

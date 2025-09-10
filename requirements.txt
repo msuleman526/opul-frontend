@@ -1,0 +1,94 @@
+Project Title: Opul
+
+1. User Flow & State Management
+
+Two roles: Client (Rider) and Driver.
+
+Client Flow (new order):
+
+Ride Request Form (Home Page):
+
+Enter pickup location.
+
+Enter approximate ride duration.
+
+Submit request.
+
+Redirect to Payment Page:
+
+Must pay an upfront, non-refundable fee (via PayPal or other).
+
+Request becomes active and visible to drivers.
+
+If not paid within 5 minutes or Client cancels → request is deleted.
+
+State handling:
+
+Request status = pending, active, expired, cancelled, or completed.
+
+Timer logic: auto-remove unconfirmed requests after 5 minutes.
+
+2. Driver Side Workflow
+
+Drivers see only active (paid) and pending requests.
+
+For each request, driver can:
+
+View pickup area, ride duration, and vehicle type needed (if provided).
+
+Click Offer Ride/Contract.
+
+If Client cancels or request expires → request should disappear from driver’s dashboard in real-time.
+
+3. Payment Integration
+
+Payment via PayPal Checkout (React SDK).
+
+If payment successful → mark request as active.
+
+If payment fails or times out → mark request as expired and remove from system.
+
+Credits system: upfront fee is stored for future rides if unused.
+
+4. Ride Acceptance & Matching
+
+After payment, available drivers appear on Client’s screen.
+
+Client sees:
+
+Driver vehicle type (sedan, SUV, truck).
+
+Hourly rate.
+
+Client clicks Accept Ride → moves both Client & Driver into chat room.
+
+5. Chat System
+
+Real-time chat between Client & Driver.
+
+Auto-greeting from Driver: “Thanks for your trust, I’m on my way. Please share exact pickup location.”
+
+Chat persists until ride is ended.
+
+Contract status = in-progress or completed.
+
+Time logging enabled for contract duration.
+
+Also allow client to pay driver through the app with a 10% cut for opul.
+
+
+6. Logging & Profiles
+
+Driver profiles: show past rides, payments, contracts.
+
+Client: no login required, no ride history (simplified flow).
+
+7. Expiry & Cancellation Rules
+
+If Client does not pay upfront fee within 5 minutes → request auto-deleted.
+
+If Client cancels before paying → request deleted.
+
+If Client cancels after paying → fee is non-refundable, marked as credit.
+
+Drivers get real-time updates when request is removed.

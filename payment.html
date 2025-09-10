@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment - Opul</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap');
+
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: 'Orbitron', sans-serif;
+      background: radial-gradient(circle at center, #0b0c2a, #050517);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 500px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .logo {
+      font-size: 48px;
+      font-weight: bold;
+      margin-bottom: 30px;
+      background: linear-gradient(45deg, #00f0ff, #a18cd1, #fbc2eb);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 30px rgba(0, 240, 255, 0.5);
+    }
+
+    .payment-card {
+      background: rgba(11, 12, 42, 0.8);
+      border: 2px solid #00f0ff;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 0 30px rgba(0, 240, 255, 0.3);
+      backdrop-filter: blur(20px);
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .ride-details {
+      margin-bottom: 30px;
+      padding: 20px;
+      background: rgba(0, 240, 255, 0.1);
+      border-radius: 12px;
+      border: 1px solid rgba(0, 240, 255, 0.3);
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      margin: 10px 0;
+      font-size: 16px;
+    }
+
+    .detail-label {
+      color: #a18cd1;
+    }
+
+    .detail-value {
+      color: #00f0ff;
+      font-weight: bold;
+    }
+
+    .amount-display {
+      text-align: center;
+      margin: 30px 0;
+      font-size: 32px;
+      font-weight: bold;
+      color: #00ff00;
+      text-shadow: 0 0 15px rgba(0, 255, 0, 0.6);
+    }
+
+    .timer-display {
+      text-align: center;
+      margin: 20px 0;
+      font-size: 18px;
+      color: #ff6b6b;
+      background: rgba(255, 107, 107, 0.1);
+      padding: 15px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 107, 107, 0.3);
+    }
+
+    .timer-warning {
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .payment-method-selector {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      margin-bottom: 30px;
+    }
+
+    .payment-method-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      padding: 15px 25px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 120px;
+      justify-content: center;
+    }
+
+    .payment-method-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+    }
+
+    .payment-method-btn.active {
+      background: linear-gradient(45deg, #00f0ff, #a18cd1);
+      border-color: #00f0ff;
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.5);
+    }
+
+    .payment-container {
+      width: 100%;
+      min-height: 200px;
+      display: none;
+    }
+
+    .payment-container.active {
+      display: block;
+    }
+
+    .paypal-container, .stripe-container {
+      margin: 20px 0;
+      width: 100%;
+    }
+
+    .stripe-card {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+
+    .stripe-pay-button {
+      background: linear-gradient(45deg, #6772e5, #24b47e);
+      border: none;
+      color: white;
+      padding: 15px 30px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      width: 100%;
+      margin-top: 20px;
+      transition: all 0.3s ease;
+    }
+
+    .stripe-pay-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 15px rgba(103, 114, 229, 0.5);
+    }
+
+    .stripe-pay-button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .payment-message {
+      margin: 20px 0;
+      padding: 15px;
+      border-radius: 12px;
+      text-align: center;
+      display: none;
+    }
+
+    .success {
+      background-color: rgba(0, 255, 0, 0.1);
+      border: 1px solid #00ff00;
+      color: #00ff00;
+    }
+
+    .error {
+      background-color: rgba(255, 0, 0, 0.1);
+      border: 1px solid #ff0000;
+      color: #ff0000;
+    }
+
+    .info {
+      background-color: rgba(0, 240, 255, 0.1);
+      border: 1px solid #00f0ff;
+      color: #00f0ff;
+    }
+
+    .back-button {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-bottom: 20px;
+      font-size: 14px;
+      text-decoration: none;
+      display: inline-block;
+      transition: all 0.3s ease;
+    }
+
+    .back-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+    }
+
+    .alternative-payment {
+      margin-top: 30px;
+      padding: 20px;
+      background: rgba(138, 43, 226, 0.1);
+      border-radius: 12px;
+      border: 1px solid rgba(138, 43, 226, 0.3);
+    }
+
+    .alt-payment-title {
+      color: #a18cd1;
+      font-weight: bold;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+
+    .credit-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 10px 0;
+    }
+
+    .use-credits-btn {
+      background: linear-gradient(45deg, rgba(138, 43, 226, 0.6), rgba(147, 0, 211, 0.6));
+      border: 1px solid #a18cd1;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+
+    .use-credits-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 15px rgba(138, 43, 226, 0.5);
+    }
+
+    .use-credits-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      margin: 20px 0;
+    }
+
+    .spinner {
+      border: 3px solid rgba(0, 240, 255, 0.3);
+      border-radius: 50%;
+      border-top: 3px solid #00f0ff;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .payment-icons {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .icon {
+      font-size: 18px;
+    }
+  </style>
+  <!-- PayPal SDK -->
+  <script 
+    src="https://www.paypal.com/sdk/js?client-id=AcEMhqkz8FMTCC9hfjGK1VLKOyemx6LZ-TANoMIm8yUsv-RRP8Qhbp4XrDGpYpEs-jXMJ_3w84mZxD6P&currency=USD"
+    onerror="handlePayPalLoadError()"
+  ></script>
+  <!-- Stripe SDK -->
+  <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">OPUL</div>
+    
+    <a href="Index.html" class="back-button">← Back to Home</a>
+
+    <div class="payment-card">
+      <h2 style="text-align: center; color: #00f0ff; margin-bottom: 30px;">Complete Your Payment</h2>
+      
+      <div class="ride-details" id="rideDetails">
+        <div class="detail-row">
+          <span class="detail-label">Pickup Location:</span>
+          <span class="detail-value" id="pickupLocation">Loading...</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Duration:</span>
+          <span class="detail-value" id="rideDuration">Loading...</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Request ID:</span>
+          <span class="detail-value" id="requestId">Loading...</span>
+        </div>
+      </div>
+
+      <div class="amount-display" id="paymentAmount">$0.00</div>
+
+      <div class="timer-display" id="timerDisplay">
+        ⏰ Time remaining: <span id="timeRemaining">5:00</span>
+        <br><small>Payment must be completed before expiration</small>
+      </div>
+
+      <!-- Loading indicator -->
+      <div class="loading" id="loadingIndicator">
+        <div class="spinner"></div>
+        <p>Initializing payment...</p>
+      </div>
+
+      <!-- Payment Method Selector -->
+      <div class="payment-method-selector" id="paymentMethodSelector" style="display: none;">
+        <button class="payment-method-btn active" id="paypalBtn" onclick="selectPaymentMethod('paypal')">
+          <div class="payment-icons">
+            <span class="icon">💳</span>
+            <span>PayPal</span>
+          </div>
+        </button>
+        <button class="payment-method-btn" id="stripeBtn" onclick="selectPaymentMethod('stripe')">
+          <div class="payment-icons">
+            <span class="icon">💰</span>
+            <span>Card</span>
+          </div>
+        </button>
+      </div>
+
+      <!-- PayPal Payment Container -->
+      <div class="payment-container active" id="paypalContainer">
+        <div class="paypal-container">
+          <div id="paypal-button-container"></div>
+        </div>
+      </div>
+
+      <!-- Stripe Payment Container -->
+      <div class="payment-container" id="stripeContainer">
+        <div class="stripe-container">
+          <div class="stripe-card">
+            <p style="text-align: center; color: #a18cd1; margin-bottom: 20px;">
+              Secure Card Payment powered by Stripe
+            </p>
+            <button class="stripe-pay-button" id="stripePayButton" onclick="initiateStripePayment()">
+              Pay with Card
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Alternative payment methods -->
+      <div class="alternative-payment" id="alternativePayment" style="display: none;">
+        <div class="alt-payment-title">💳 Alternative Payment</div>
+        <div class="credit-info">
+          <span>Available Credits: $<span id="availableCredits">0.00</span></span>
+          <button class="use-credits-btn" id="useCreditsBtn" onclick="useCredits()" disabled>
+            Use Credits
+          </button>
+        </div>
+        <p style="font-size: 12px; color: #888; text-align: center; margin-top: 15px;">
+          Credits from previous cancelled rides can be used for payment
+        </p>
+      </div>
+
+      <div class="payment-message" id="paymentMessage"></div>
+    </div>
+  </div>
+
+  <script>
+    // Configuration
+    const API_BASE = 'http://localhost:5000/api';
+    
+    // Get URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const requestId = urlParams.get('requestId');
+    const amount = parseFloat(urlParams.get('amount')) || 0;
+
+    // Global variables
+    let paymentOrderId = null;
+    let expirationTime = null;
+    let timerInterval = null;
+    let userCredits = 0;
+    let stripe = null;
+    let stripePublishableKey = null;
+    let currentPaymentMethod = 'paypal';
+
+    // Initialize page
+    window.addEventListener('load', async function() {
+      if (!requestId || !amount) {
+        showMessage('Invalid payment link. Please start from the ride request page.', 'error');
+        setTimeout(() => window.location.href = 'Index.html', 3000);
+        return;
+      }
+
+      await initializePayment();
+    });
+
+    async function initializePayment() {
+      try {
+        // Show loading
+        document.getElementById('loadingIndicator').style.display = 'block';
+        
+        console.log('Initializing payment for:', { requestId, amount });
+        
+        // Load ride details
+        await loadRideDetails();
+        
+        // Load user credits if email available
+        await loadUserCredits();
+        
+        // Initialize Stripe
+        await initializeStripe();
+        
+        // Initialize PayPal
+        await initializePayPal();
+        
+        // Start countdown timer
+        startCountdownTimer();
+        
+        // Hide loading
+        document.getElementById('loadingIndicator').style.display = 'none';
+        document.getElementById('paymentMethodSelector').style.display = 'flex';
+        document.getElementById('alternativePayment').style.display = 'block';
+        
+        console.log('Payment initialization complete');
+      } catch (error) {
+        console.error('Payment initialization failed:', error);
+        document.getElementById('loadingIndicator').style.display = 'none';
+        showMessage(`Failed to initialize payment: ${error.message}`, 'error');
+      }
+    }
+
+    async function initializeStripe() {
+      try {
+        // Get Stripe publishable key
+        const response = await fetch(`${API_BASE}/payments/stripe-config`);
+        const data = await response.json();
+        
+        if (data.success && data.data.publishableKey) {
+          stripePublishableKey = data.data.publishableKey;
+          stripe = Stripe(stripePublishableKey);
+          console.log('Stripe initialized successfully');
+        } else {
+          console.warn('Stripe publishable key not available');
+        }
+      } catch (error) {
+        console.error('Failed to initialize Stripe:', error);
+      }
+    }
+
+    function selectPaymentMethod(method) {
+      currentPaymentMethod = method;
+      
+      // Update button styles
+      document.getElementById('paypalBtn').classList.remove('active');
+      document.getElementById('stripeBtn').classList.remove('active');
+      document.getElementById(method + 'Btn').classList.add('active');
+      
+      // Show/hide payment containers
+      document.getElementById('paypalContainer').classList.remove('active');
+      document.getElementById('stripeContainer').classList.remove('active');
+      document.getElementById(method + 'Container').classList.add('active');
+    }
+
+    async function initiateStripePayment() {
+      if (!stripe) {
+        showMessage('Stripe is not available. Please use PayPal or try again later.', 'error');
+        return;
+      }
+
+      try {
+        showMessage('Creating Stripe checkout session...', 'info');
+        
+        const response = await fetch(`${API_BASE}/payments/create-order`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            requestId: requestId,
+            amount: amount,
+            paymentMethod: 'stripe'
+          })
+        });
+
+        const data = await response.json();
+        
+        if (!data.success) {
+          throw new Error(data.message);
+        }
+
+        // Redirect to Stripe Checkout
+        window.location.href = data.data.checkoutUrl;
+        
+      } catch (error) {
+        console.error('Stripe payment error:', error);
+        showMessage(`Stripe payment failed: ${error.message}`, 'error');
+      }
+    }
+
+    async function loadRideDetails() {
+      try {
+        // Try to get from localStorage first
+        const storedRequest = localStorage.getItem('currentRideRequest');
+        if (storedRequest) {
+          const rideData = JSON.parse(storedRequest);
+          updateRideDetailsDisplay(rideData);
+          return;
+        }
+
+        // Fallback to API call
+        const response = await fetch(`${API_BASE}/rides/${requestId}`);
+        const data = await response.json();
+        
+        if (data.success) {
+          updateRideDetailsDisplay({
+            requestId: data.data.requestId,
+            pickupAddress: data.data.pickupLocation.address,
+            duration: data.data.duration,
+            upfrontFee: data.data.upfrontFee,
+            expiresAt: data.data.expiresAt
+          });
+        }
+      } catch (error) {
+        console.error('Error loading ride details:', error);
+      }
+    }
+
+    function updateRideDetailsDisplay(rideData) {
+      document.getElementById('requestId').textContent = rideData.requestId || requestId;
+      document.getElementById('pickupLocation').textContent = rideData.pickupAddress || 'Address provided';
+      document.getElementById('rideDuration').textContent = `${rideData.duration || 'N/A'} hour(s)`;
+      document.getElementById('paymentAmount').textContent = `$${(rideData.upfrontFee || amount).toFixed(2)}`;
+      
+      if (rideData.expiresAt) {
+        expirationTime = new Date(rideData.expiresAt);
+      } else {
+        // Default to 5 minutes from now
+        expirationTime = new Date(Date.now() + 5 * 60 * 1000);
+      }
+    }
+
+    async function loadUserCredits() {
+      // Check if user has provided email (from localStorage or prompt)
+      let userEmail = localStorage.getItem('userEmail');
+      
+      if (!userEmail) {
+        const storedRequest = localStorage.getItem('currentRideRequest');
+        if (storedRequest) {
+          const rideData = JSON.parse(storedRequest);
+          if (rideData.clientEmail) {
+            userEmail = rideData.clientEmail;
+          }
+        }
+      }
+
+      if (userEmail) {
+        try {
+          const response = await fetch(`${API_BASE}/payments/credits/${encodeURIComponent(userEmail)}`);
+          const data = await response.json();
+          
+          if (data.success) {
+            userCredits = data.data.totalCredits;
+            document.getElementById('availableCredits').textContent = userCredits.toFixed(2);
+            
+            if (userCredits >= amount) {
+              document.getElementById('useCreditsBtn').disabled = false;
+            }
+          }
+        } catch (error) {
+          console.error('Error loading user credits:', error);
+        }
+      }
+    }
+
+    async function initializePayPal() {
+      try {
+        // Wait for PayPal SDK to load
+        if (typeof paypal === 'undefined') {
+          await waitForPayPal();
+        }
+
+        // Create PayPal order
+        console.log('Creating PayPal order with:', { requestId, amount });
+        
+        const response = await fetch(`${API_BASE}/payments/create-order`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            requestId: requestId,
+            amount: amount,
+            paymentMethod: 'paypal'
+          })
+        });
+
+        const data = await response.json();
+        console.log('PayPal order response:', data);
+        
+        if (!data.success) {
+          throw new Error(data.message);
+        }
+
+        paymentOrderId = data.data.paypalOrderId;
+        console.log('PayPal order created:', paymentOrderId);
+
+        // Initialize PayPal buttons
+        paypal.Buttons({
+          createOrder: function(data, actions) {
+            return paymentOrderId;
+          },
+          
+          onApprove: async function(data, actions) {
+            showMessage('Processing PayPal payment...', 'info');
+            
+            try {
+              const captureResponse = await fetch(`${API_BASE}/payments/capture-order`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  paypalOrderId: data.orderID
+                })
+              });
+
+              const captureData = await captureResponse.json();
+              
+              if (captureData.success) {
+                showMessage('Payment successful! Redirecting to driver selection...', 'success');
+                
+                // Clear stored request data
+                localStorage.removeItem('currentRideRequest');
+                
+                // Redirect to driver selection page
+                setTimeout(() => {
+                  window.location.href = `drivers.html?requestId=${requestId}`;
+                }, 2000);
+              } else {
+                throw new Error(captureData.message);
+              }
+            } catch (error) {
+              showMessage(`Payment failed: ${error.message}`, 'error');
+            }
+          },
+          
+          onError: function(err) {
+            console.error('PayPal error:', err);
+            showMessage('PayPal payment error occurred. Please try again.', 'error');
+          },
+          
+          onCancel: function(data) {
+            showMessage('PayPal payment cancelled. You can try again or use alternative payment methods.', 'info');
+          }
+        }).render('#paypal-button-container');
+
+      } catch (error) {
+        console.error('PayPal initialization error:', error);
+        showMessage(`PayPal initialization failed: ${error.message}`, 'error');
+      }
+    }
+
+    // Wait for PayPal SDK to load
+    function waitForPayPal() {
+      return new Promise((resolve, reject) => {
+        let attempts = 0;
+        const maxAttempts = 50; // 5 seconds max wait
+        
+        const checkPayPal = () => {
+          attempts++;
+          
+          if (typeof paypal !== 'undefined') {
+            resolve();
+          } else if (attempts >= maxAttempts) {
+            reject(new Error('PayPal SDK failed to load'));
+          } else {
+            setTimeout(checkPayPal, 100);
+          }
+        };
+        
+        checkPayPal();
+      });
+    }
+
+    async function useCredits() {
+      if (userCredits < amount) {
+        showMessage('Insufficient credits for this payment.', 'error');
+        return;
+      }
+
+      const userEmail = prompt('Please confirm your email address to use credits:');
+      if (!userEmail) return;
+
+      try {
+        showMessage('Processing credit payment...', 'info');
+        
+        const response = await fetch(`${API_BASE}/payments/credits/use`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            clientEmail: userEmail,
+            amount: amount,
+            requestId: requestId
+          })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          // Mark ride as paid (simulate the payment completion)
+          const captureResponse = await fetch(`${API_BASE}/payments/capture-order`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              paypalOrderId: paymentOrderId,
+              creditPayment: true
+            })
+          });
+
+          showMessage('Credit payment successful! Redirecting to driver selection...', 'success');
+          localStorage.setItem('userEmail', userEmail);
+          
+          setTimeout(() => {
+            window.location.href = `drivers.html?requestId=${requestId}`;
+          }, 2000);
+        } else {
+          throw new Error(data.message);
+        }
+      } catch (error) {
+        showMessage(`Credit payment failed: ${error.message}`, 'error');
+      }
+    }
+
+    function startCountdownTimer() {
+      if (!expirationTime) return;
+
+      timerInterval = setInterval(() => {
+        const now = new Date().getTime();
+        const timeLeft = expirationTime.getTime() - now;
+
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          document.getElementById('timeRemaining').textContent = 'EXPIRED';
+          document.getElementById('timerDisplay').classList.add('timer-warning');
+          document.getElementById('paymentMethodSelector').style.display = 'none';
+          document.getElementById('paypalContainer').style.display = 'none';
+          document.getElementById('stripeContainer').style.display = 'none';
+          showMessage('Payment time expired. Please create a new ride request.', 'error');
+          setTimeout(() => window.location.href = 'Index.html', 3000);
+          return;
+        }
+
+        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+        
+        document.getElementById('timeRemaining').textContent = 
+          `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+        // Add warning animation when less than 1 minute
+        if (timeLeft <= 60000) {
+          document.getElementById('timerDisplay').classList.add('timer-warning');
+        }
+      }, 1000);
+    }
+
+    function showMessage(text, type) {
+      const messageEl = document.getElementById('paymentMessage');
+      messageEl.innerHTML = text.replace(/\n/g, '<br>');
+      messageEl.className = `payment-message ${type}`;
+      messageEl.style.display = 'block';
+    }
+
+    function handlePayPalLoadError() {
+      console.error('Failed to load PayPal SDK');
+      showMessage('Failed to load PayPal. Stripe payment is still available.', 'error');
+      // Auto-switch to Stripe if PayPal fails
+      selectPaymentMethod('stripe');
+    }
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', function() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+      }
+    });
+  </script>
+</body>
+</html>

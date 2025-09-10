@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Timer Test - Opul</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f0f0f0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .timer-display {
+      font-size: 48px;
+      font-weight: bold;
+      color: #ff4500;
+      text-align: center;
+      margin: 20px 0;
+    }
+    .button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    .button:hover {
+      background: #0056b3;
+    }
+    .status {
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 5px;
+    }
+    .success { background: #d4edda; color: #155724; }
+    .error { background: #f8d7da; color: #721c24; }
+    .info { background: #d1ecf1; color: #0c5460; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Timer Implementation Test</h1>
+    
+    <div class="timer-display" id="timerDisplay">3:00</div>
+    
+    <div>
+      <button class="button" onclick="startTimer()">Start 3-Minute Timer</button>
+      <button class="button" onclick="stopTimer()">Stop Timer</button>
+      <button class="button" onclick="testAPI()">Test API Endpoints</button>
+    </div>
+    
+    <div id="status" class="status info" style="display: none;"></div>
+    
+    <h3>Test Scenarios:</h3>
+    <ul>
+      <li>Start timer and let it count down</li>
+      <li>Start timer and accept driver before expiry</li>
+      <li>Check timer status after page refresh</li>
+      <li>Verify credit refund on timer expiry</li>
+    </ul>
+    
+    <h3>Test Requests:</h3>
+    <div>
+      <input type="text" id="requestIdInput" placeholder="Enter Request ID" style="width: 200px; padding: 5px;">
+      <button class="button" onclick="testTimerEndpoints()">Test Timer Endpoints</button>
+    </div>
+    
+    <div id="apiResults"></div>
+  </div>
+
+  <script>
+    const API_BASE = 'http://localhost:5000/api';
+    let timerInterval = null;
+    let timerEndTime = null;
+
+    function startTimer() {
+      // Simulate 3-minute timer
+      timerEndTime = new Date(Date.now() + 3 * 60 * 1000);
+      showStatus('Timer started for 3 minutes', 'info');
+      
+      timerInterval = setInterval(updateDisplay, 1000);
+      updateDisplay();
+    }
+
+    function stopTimer() {
+      clearInterval(timerInterval);
+      timerInterval = null;
+      showStatus('Timer stopped', 'info');
+    }
+
+    function updateDisplay() {
+      if (!timerEndTime) return;
+
+      const now = new Date();
+      const timeRemaining = Math.max(0, timerEndTime - now);
+      
+      if (timeRemaining <= 0) {
+        clearInterval(timerInterval);
+        document.getElementById('timerDisplay').textContent = 'EXPIRED';
+        showStatus('Timer expired! In real app, credit would be refunded.', 'error');
+        return;
+      }
+
+      const minutes = Math.floor(timeRemaining / (1000 * 60));
+      const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
+      
+      document.getElementById('timerDisplay').textContent = 
+        `${minutes}:${seconds.toString().padStart(2, '0')}`;
+      
+      if (timeRemaining <= 60000) {
+        document.getElementById('timerDisplay').style.color = '#ff0000';
+      }
+    }
+
+    async function testAPI() {
+      showStatus('Testing API connection...', 'info');
+      
+      try {
+        const response = await fetch(`${API_BASE}/rides/active`);
+        const data = await response.json();
+        
+        if (data.success) {
+          showStatus(`API working! Found ${data.data.length} active rides`, 'success');
+        } else {
+          showStatus('API responded but with error: ' + data.message, 'error');
+        }
+      } catch (error) {
+        showStatus('API connection failed: ' + error.message, 'error');
+      }
+    }
+
+    async function testTimerEndpoints() {
+      const requestId = document.getElementById('requestIdInput').value;
+      if (!requestId) {
+        showStatus('Please enter a request ID', 'error');
+        return;
+      }
+
+      const results = document.getElementById('apiResults');
+      results.innerHTML = '<h4>API Test Results:</h4>';
+
+      // Test timer status endpoint
+      try {
+        const statusResponse = await fetch(`${API_BASE}/rides/${requestId}/timer-status`);
+        const statusData = await statusResponse.json();
+        
+        results.innerHTML += `
+          <div class="status info">
+            <strong>Timer Status:</strong><br>
+            ${JSON.stringify(statusData, null, 2)}
+          </div>
+        `;
+      } catch (error) {
+        results.innerHTML += `
+          <div class="status error">
+            <strong>Timer Status Error:</strong> ${error.message}
+          </div>
+        `;
+      }
+
+      // Test start timer endpoint
+      try {
+        const startResponse = await fetch(`${API_BASE}/rides/${requestId}/start-timer`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const startData = await startResponse.json();
+        
+        results.innerHTML += `
+          <div class="status ${startData.success ? 'success' : 'error'}">
+            <strong>Start Timer:</strong><br>
+            ${JSON.stringify(startData, null, 2)}
+          </div>
+        `;
+      } catch (error) {
+        results.innerHTML += `
+          <div class="status error">
+            <strong>Start Timer Error:</strong> ${error.message}
+          </div>
+        `;
+      }
+    }
+
+    function showStatus(message, type) {
+      const status = document.getElementById('status');
+      status.textContent = message;
+      status.className = `status ${type}`;
+      status.style.display = 'block';
+    }
+  </script>
+</body>
+</html>

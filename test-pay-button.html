@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Pay Driver Button - User Side</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            background: #1a1a1a; 
+            color: white; 
+            padding: 20px; 
+        }
+        .test-section { 
+            background: #2a2a2a; 
+            padding: 20px; 
+            margin: 20px 0; 
+            border-radius: 8px; 
+        }
+        .button {
+            background: linear-gradient(45deg, #ff6b35, #f7931e);
+            border: none;
+            padding: 10px 20px;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .hidden { display: none; }
+        .visible { display: inline-block; }
+    </style>
+</head>
+<body>
+    <h1>Pay Driver Button Test</h1>
+    
+    <div class="test-section">
+        <h3>Test 1: Button Visibility Logic</h3>
+        <p>Current URL parameters:</p>
+        <ul>
+            <li>requestId: <span id="requestId"></span></li>
+            <li>userType: <span id="userType"></span></li>
+            <li>driverToken: <span id="driverToken"></span></li>
+        </ul>
+        
+        <button id="testPayDriverButton" class="button hidden">💳 Pay Driver</button>
+        <p>Button status: <span id="buttonStatus">Hidden</span></p>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test URLs:</h3>
+        <p><strong>User (should show Pay Driver button):</strong></p>
+        <a href="chat.html?requestId=123&userType=user" target="_blank" style="color: #00ff88;">
+            chat.html?requestId=123&userType=user
+        </a>
+        <br><br>
+        
+        <p><strong>Driver (should NOT show Pay Driver button):</strong></p>
+        <a href="chat.html?requestId=123&userType=driver&driverToken=test123" target="_blank" style="color: #ff6b35;">
+            chat.html?requestId=123&userType=driver&driverToken=test123
+        </a>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test 2: Manual Button Test</h3>
+        <button onclick="forceShowButton()" class="button">Force Show Button</button>
+        <button onclick="testPayDriverModal()" class="button">Test Payment Modal</button>
+    </div>
+
+    <script>
+        // Get URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const requestId = urlParams.get('requestId') || 'None';
+        const userType = urlParams.get('userType') || 'None';
+        const driverToken = urlParams.get('driverToken') || 'None';
+        
+        // Display parameters
+        document.getElementById('requestId').textContent = requestId;
+        document.getElementById('userType').textContent = userType;
+        document.getElementById('driverToken').textContent = driverToken;
+        
+        // Test button visibility logic
+        const payDriverButton = document.getElementById('testPayDriverButton');
+        const buttonStatus = document.getElementById('buttonStatus');
+        
+        function updateButtonVisibility() {
+            if (userType === 'user') {
+                payDriverButton.classList.remove('hidden');
+                payDriverButton.classList.add('visible');
+                buttonStatus.textContent = 'Visible (User type detected)';
+                buttonStatus.style.color = '#00ff88';
+            } else {
+                payDriverButton.classList.add('hidden');
+                payDriverButton.classList.remove('visible');
+                buttonStatus.textContent = 'Hidden (Not user type)';
+                buttonStatus.style.color = '#ff6b35';
+            }
+        }
+        
+        function forceShowButton() {
+            payDriverButton.classList.remove('hidden');
+            payDriverButton.classList.add('visible');
+            buttonStatus.textContent = 'Forced Visible';
+            buttonStatus.style.color = '#00f0ff';
+        }
+        
+        function testPayDriverModal() {
+            alert('Payment Modal Test:\n\nHourly Rate: $25.00\nDuration: 2 hours\nBase Amount: $50.00\nTip (10%): $5.00\nTotal: $55.00\n\nThis would open the payment modal in the actual chat.');
+        }
+        
+        // Run the test
+        updateButtonVisibility();
+        
+        // Add click handler to test button
+        payDriverButton.addEventListener('click', function() {
+            testPayDriverModal();
+        });
+        
+        console.log('Button Test Results:');
+        console.log('- requestId:', requestId);
+        console.log('- userType:', userType);
+        console.log('- driverToken:', driverToken);
+        console.log('- Button should be visible:', userType === 'user');
+    </script>
+</body>
+</html>
