@@ -233,8 +233,15 @@
         const sessionId = urlParams.get('session_id');
         const paypalOrderId = urlParams.get('paypal_order_id');
         const requestId = urlParams.get('requestId');
+        const paymentType = urlParams.get('type');
 
-        console.log('🎯 Driver Payment success page loaded:', { sessionId, paypalOrderId, requestId });
+        console.log('🎯 Payment success page loaded:', { sessionId, paypalOrderId, requestId, paymentType });
+
+        // If this is a service fee payment, redirect to index.html with success flag
+        if (paymentType === 'service_fee') {
+            console.log('💳 Service fee payment detected - redirecting to index.html');
+            window.location.href = `index.html?payment=success`;
+        }
 
         // Elements
         const loadingState = document.getElementById('loadingState');
