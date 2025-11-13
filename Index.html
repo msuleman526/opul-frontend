@@ -367,10 +367,10 @@
 
       <!-- Client Info -->
       <button class="button" style="background: rgba(0,240,255,0.2); font-size: 14px;" onclick="toggleClientInfo()">
-        📝 Add Contact Info (Recommended)
+        📝 Add Contact Info (Optional)
       </button>
 
-      <div class="client-info" id="clientInfo">
+      <div class="client-info" id="clientInfo" style="display: none;">
         <input class="input-field small-input" type="text" id="clientName" placeholder="Your name" />
         <input class="input-field small-input" type="tel" id="clientPhone" placeholder="Phone number" />
         <input class="input-field small-input" type="email" id="clientEmail" placeholder="Email address" />
@@ -392,9 +392,9 @@
         </p>
 
         <div style="margin: 20px 0;">
-          <input class="input-field small-input" type="email" id="paymentEmail" placeholder="Email address"
+          <input class="input-field small-input" type="email" id="paymentEmail" placeholder="Email (optional)"
             style="margin-bottom: 10px;" />
-          <input class="input-field small-input" type="tel" id="paymentPhone" placeholder="Phone number" />
+          <input class="input-field small-input" type="tel" id="paymentPhone" placeholder="Phone (optional)" />
         </div>
 
         <div class="payment-buttons">
@@ -499,9 +499,9 @@
         },
         duration: duration,
         clientInfo: {
-          name: name || 'Anonymous',
-          phone: phone,
-          email: email
+          name: name || 'Unknown Customer',
+          phone: phone || null,
+          email: email || null
         }
       };
 
@@ -560,8 +560,22 @@
     // Payment Modal Functions
     function showPaymentModal() {
       paymentModal.style.display = 'flex';
-      if (userEmail) document.getElementById('paymentEmail').value = userEmail;
-      if (userPhone) document.getElementById('paymentPhone').value = userPhone;
+
+      // Auto-populate with contact info if provided
+      const email = document.getElementById('clientEmail').value.trim();
+      const phone = document.getElementById('clientPhone').value.trim();
+
+      if (email) {
+        document.getElementById('paymentEmail').value = email;
+      } else if (userEmail) {
+        document.getElementById('paymentEmail').value = userEmail;
+      }
+
+      if (phone) {
+        document.getElementById('paymentPhone').value = phone;
+      } else if (userPhone) {
+        document.getElementById('paymentPhone').value = userPhone;
+      }
     }
 
     function closePaymentModal() {
@@ -580,11 +594,6 @@
       const email = document.getElementById('paymentEmail').value.trim();
       const phone = document.getElementById('paymentPhone').value.trim();
 
-      if (!email && !phone) {
-        showMessage('Please enter either email or phone number', 'error');
-        return;
-      }
-
       const pendingRidePayment = localStorage.getItem('pendingRidePayment');
       if (!pendingRidePayment) {
         showMessage('No pending ride request found', 'error');
@@ -600,8 +609,8 @@
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            email,
-            phone,
+            email: email || 'unknown@customer.com',
+            phone: phone || 'N/A',
             paymentMethod,
             isForRide: true,
             requestId: rideData.requestId
@@ -643,7 +652,7 @@
     function showRideForm() {
       roleSelection.style.display = 'none';
       rideForm.style.display = 'flex';
-      clientInfo.style.display = 'flex';
+      // Keep client info hidden by default
     }
 
     function showRoleSelection() {
@@ -722,11 +731,6 @@
 
       if (!duration) {
         showMessage('Please select ride duration', 'error');
-        return;
-      }
-
-      if (!email && !phone) {
-        showMessage('Please enter either email or phone number', 'error');
         return;
       }
 
