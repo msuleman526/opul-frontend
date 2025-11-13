@@ -37,47 +37,6 @@
       text-shadow: 0 0 30px rgba(0, 240, 255, 0.5);
     }
 
-    .credit-display {
-      display: none;
-      background: rgba(0, 240, 255, 0.1);
-      border: 2px solid #00f0ff;
-      border-radius: 12px;
-      padding: 15px;
-      margin-bottom: 20px;
-      text-align: center;
-      width: 100%;
-      box-sizing: border-box;
-    }
-
-    .credit-count {
-      font-size: 24px;
-      font-weight: bold;
-      color: #00f0ff;
-      margin-bottom: 5px;
-    }
-
-    .credit-label {
-      font-size: 14px;
-      color: rgba(255, 255, 255, 0.7);
-    }
-
-    .buy-credits-btn {
-      background: linear-gradient(45deg, #ff6b35, #f7931e);
-      border: none;
-      color: white;
-      padding: 10px 20px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 14px;
-      font-weight: bold;
-      margin-top: 10px;
-      transition: all 0.3s ease;
-    }
-
-    .buy-credits-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(255, 107, 53, 0.4);
-    }
 
     .role-selection {
       display: flex;
@@ -373,15 +332,6 @@
   <div class="container">
     <div class="logo">OPUL</div>
 
-    <!-- Credit Display -->
-    <div class="credit-display" id="creditDisplay">
-      <div class="credit-count" id="creditCount">Loading...</div>
-      <div class="credit-label">Available Credits</div>
-      <button class="buy-credits-btn" onclick="showPaymentModal()">
-        💳 Buy Credits ($10 = 1 Credit)
-      </button>
-    </div>
-
     <!-- Role Selection -->
     <div class="role-selection" id="roleSelection">
       <button class="role-button" onclick="selectRole('client')">
@@ -394,8 +344,9 @@
 
     <!-- Client Ride Request Form -->
     <div class="ride-form" id="rideForm">
-      <button class="back-button" onclick="showRoleSelection()">← Back to Role Selection</button>
+      <button class="back-button" style="display: none;" onclick="showRoleSelection()">← Back to Role Selection</button>
 
+      <img src="logo.png" style="width: 100%; margin-bottom: -7px;" />
       <div class="input-container">
         <input class="input-field" type="text" id="addressInput" placeholder="Where should we pick you up?"
           autocomplete="off" />
@@ -436,10 +387,10 @@
     <div class="payment-modal" id="paymentModal">
       <div class="payment-content">
         <button class="close-modal" onclick="closePaymentModal()">×</button>
-        <h3 style="color: #00f0ff; margin-top: 0;">Buy Credit</h3>
-        <p>Pay $10 to get 1 credit</p>
+        <h3 style="color: #00f0ff; margin-top: 0;">Complete Your Ride Payment</h3>
+        <p>Pay $10 to proceed with your ride request</p>
         <p style="font-size: 14px; color: rgba(255,255,255,0.7);">
-          Credits allow you to request rides without paying each time.
+          After payment, you can select a driver.
         </p>
 
         <div style="margin: 20px 0;">
@@ -527,25 +478,21 @@
     const requestRideBtn = document.getElementById('requestRideBtn');
     const formMessage = document.getElementById('formMessage');
     const clientInfo = document.getElementById('clientInfo');
-    const creditDisplay = document.getElementById('creditDisplay');
-    const creditCount = document.getElementById('creditCount');
     const paymentModal = document.getElementById('paymentModal');
 
     // Global variables
-    let currentCredits = 0;
     let userEmail = '';
     let userPhone = '';
 
     // Initialize on page load
     window.addEventListener('load', function () {
-      initializeCredits();
       setupAddressAutocomplete();
       checkBackendConnection();
       handlePaymentSuccess();
     });
 
-    // ALWAYS CREATE RIDE REQUEST - No credit check, just create and show to drivers
-    async function createRideRequestAlways(address, duration, name, phone, email) {
+    // Create ride request and redirect to payment
+    async function createRideRequestWithPayment(address, duration, name, phone, email) {
       const rideData = {
         pickupLocation: {
           address: address,
@@ -558,7 +505,6 @@
           phone: phone,
           email: email
         }
-        // No hasCredits flag - always create
       };
 
       requestRideBtn.disabled = true;
@@ -577,22 +523,29 @@
         const result = await response.json();
 
         if (result.success) {
-          showMessage(`✅ Ride request created successfully!\nRequest ID: ${result.data.requestId}\nDrivers can now see your request and make offers.`, 'success');
+          const requestId = result.data.requestId;
 
-          // Update credits display
-          await loadUserCredits();
+          showMessage(`✅ Ride request created!\nRequest ID: ${requestId}\n\nNow proceeding to payment...`, 'success');
 
+          // Store ride request data
           localStorage.setItem('currentRideRequest', JSON.stringify({
-            requestId: result.data.requestId,
+            requestId: requestId,
             pickupAddress: address,
             duration: duration,
-            status: result.data.status
+            status: result.data.status,
+            needsPayment: true
           }));
 
-          // Redirect to drivers page to see offers (NO TIMER YET)
+          // Store payment data
+          localStorage.setItem('pendingRidePayment', JSON.stringify({
+            requestId: requestId,
+            address, duration, name, phone, email
+          }));
+
+          // Show payment modal after 1 second
           setTimeout(() => {
-            window.location.href = `drivers.html?requestId=${result.data.requestId}`;
-          }, 2000);
+            showPaymentModal();
+          }, 1500);
 
         } else {
           showMessage(`Failed to create ride request: ${result.message}`, 'error');
@@ -603,37 +556,6 @@
       } finally {
         requestRideBtn.disabled = false;
         requestRideBtn.textContent = 'Request Ride';
-      }
-    }
-    async function initializeCredits() {
-      userEmail = localStorage.getItem('userEmail') || '';
-      userPhone = localStorage.getItem('userPhone') || '';
-
-      if (userEmail || userPhone) {
-        await loadUserCredits();
-      } else {
-        creditCount.textContent = '0';
-      }
-    }
-
-    async function loadUserCredits() {
-      try {
-        const params = new URLSearchParams();
-        if (userEmail) params.append('email', userEmail);
-        if (userPhone) params.append('phone', userPhone);
-
-        const response = await fetch(`${API_BASE}/credits?${params}`);
-        const data = await response.json();
-
-        if (data.success) {
-          currentCredits = data.data.totalCredits;
-          creditCount.textContent = currentCredits;
-        } else {
-          creditCount.textContent = '0';
-        }
-      } catch (error) {
-        console.error('Error loading credits:', error);
-        creditCount.textContent = '0';
       }
     }
 
@@ -649,14 +571,14 @@
     }
 
     async function payWithPayPal() {
-      await processServiceFeePayment('paypal');
+      await processRidePayment('paypal');
     }
 
     async function payWithStripe() {
-      await processServiceFeePayment('stripe');
+      await processRidePayment('stripe');
     }
 
-    async function processServiceFeePayment(paymentMethod) {
+    async function processRidePayment(paymentMethod) {
       const email = document.getElementById('paymentEmail').value.trim();
       const phone = document.getElementById('paymentPhone').value.trim();
 
@@ -664,6 +586,14 @@
         showMessage('Please enter either email or phone number', 'error');
         return;
       }
+
+      const pendingRidePayment = localStorage.getItem('pendingRidePayment');
+      if (!pendingRidePayment) {
+        showMessage('No pending ride request found', 'error');
+        return;
+      }
+
+      const rideData = JSON.parse(pendingRidePayment);
 
       try {
         const response = await fetch(`${API_BASE}/payments/create-service-fee`, {
@@ -674,7 +604,9 @@
           body: JSON.stringify({
             email,
             phone,
-            paymentMethod
+            paymentMethod,
+            isForRide: true,
+            requestId: rideData.requestId
           })
         });
 
@@ -683,6 +615,9 @@
         if (data.success) {
           if (email) localStorage.setItem('userEmail', email);
           if (phone) localStorage.setItem('userPhone', phone);
+
+          localStorage.setItem('paymentForExistingRide', 'true');
+          localStorage.setItem('paymentRequestId', rideData.requestId);
 
           if (paymentMethod === 'stripe') {
             window.location.href = data.data.checkoutUrl;
@@ -701,10 +636,8 @@
     // Role selection functions
     function selectRole(role) {
       if (role === 'client') {
-        creditDisplay.style.display = 'block';
         showRideForm();
       } else if (role === 'driver') {
-        creditDisplay.style.display = 'none';
         window.location.href = 'driver-portal.html';
       }
     }
@@ -774,7 +707,7 @@
       });
     }
 
-    // NEW CORRECTED RIDE REQUEST FLOW - Always create request, check credits later
+    // Ride request button handler - Create request then require payment
     requestRideBtn.addEventListener('click', async function () {
       const address = addressInput.value.trim();
       const duration = parseInt(timeSelect.value);
@@ -820,204 +753,10 @@
         userPhone = phone;
       }
 
-      // ALWAYS CREATE RIDE REQUEST (no credit check here)
-      await createRideRequestAlways(address, duration, name, phone, email);
+      // Create ride request and show payment modal
+      await createRideRequestWithPayment(address, duration, name, phone, email);
     });
 
-    async function createRideRequest(address, duration, name, phone, email, hasCredits = false) {
-      const rideData = {
-        pickupLocation: {
-          address: address,
-          latitude: null,
-          longitude: null
-        },
-        duration: duration,
-        clientInfo: {
-          name: name || 'Anonymous',
-          phone: phone,
-          email: email
-        },
-        hasCredits: hasCredits // Send this flag to the backend
-      };
-
-      requestRideBtn.textContent = 'Creating request...';
-      showMessage('Creating your ride request...', 'info');
-
-      try {
-        const response = await fetch(`${API_BASE}/rides/request-corrected`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(rideData)
-        });
-
-        const result = await response.json();
-
-        if (result.success) {
-          if (hasCredits) {
-            // User has credits - Show success and redirect to drivers page with timer
-            showMessage(`✅ Ride request created! Timer started.\nYou have 3 minutes to select a driver.`, 'success');
-
-            localStorage.setItem('currentRideRequest', JSON.stringify({
-              requestId: result.data.requestId,
-              pickupAddress: address,
-              duration: duration,
-              status: result.data.status,
-              timerStarted: true
-            }));
-
-            // Redirect to drivers page after 2 seconds
-            setTimeout(() => {
-              window.location.href = `drivers.html?requestId=${result.data.requestId}`;
-            }, 2000);
-          } else {
-            // This should not happen in the corrected flow
-            showMessage('Ride request created but payment required.', 'warning');
-          }
-        } else {
-          showMessage(`Failed to create ride request: ${result.message}`, 'error');
-        }
-      } catch (error) {
-        console.error('API Error:', error);
-        showMessage('Network error. Please check your connection and try again.', 'error');
-      }
-    }
-
-    async function createRideRequestAndHandlePayment(address, duration, name, phone, email) {
-      const rideData = {
-        pickupLocation: {
-          address: address,
-          latitude: null,
-          longitude: null
-        },
-        duration: duration,
-        clientInfo: {
-          name: name || 'Anonymous',
-          phone: phone,
-          email: email
-        },
-        hasCredits: false // User doesn't have credits, will pay after
-      };
-
-      requestRideBtn.textContent = 'Creating request...';
-      showMessage('Creating your ride request for drivers to see...', 'info');
-
-      try {
-        // STEP 1: Create ride request FIRST so drivers can see it
-        const response = await fetch(`${API_BASE}/rides/request`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(rideData)
-        });
-
-        const result = await response.json();
-
-        if (result.success) {
-          const requestId = result.data.requestId;
-
-          showMessage(`✅ Ride request created! Drivers can now see your request.\nRequest ID: ${requestId}\n\nNow please pay $10 to proceed with driver selection.`, 'success');
-
-          // Store ride request data for after payment
-          localStorage.setItem('currentRideRequest', JSON.stringify({
-            requestId: requestId,
-            pickupAddress: address,
-            duration: duration,
-            status: result.data.status,
-            needsPayment: true
-          }));
-
-          // STEP 2: Show payment options with the request ID
-          showPaymentOptionsForExistingRide(requestId, address, duration, name, phone, email);
-        } else {
-          throw new Error(result.message);
-        }
-      } catch (error) {
-        console.error('Error creating ride request:', error);
-        showMessage(`Failed to create ride request: ${error.message}`, 'error');
-      }
-    }
-
-    function showPaymentOptionsForExistingRide(requestId, address, duration, name, phone, email) {
-      // Store both ride data and request ID for after payment
-      localStorage.setItem('pendingRidePayment', JSON.stringify({
-        requestId: requestId,
-        address, duration, name, phone, email
-      }));
-
-      // Show payment modal
-      showPaymentModal();
-
-      // Update payment modal to show it's for an existing ride
-      const paymentContent = document.querySelector('.payment-content h3');
-      paymentContent.innerHTML = '💳 Complete Your Ride Request';
-
-      const paymentInfo = document.querySelector('.payment-content p');
-      paymentInfo.innerHTML = `Your ride request has been created and drivers can see it!<br><br>Pay $10 to get 1 credit and proceed with driver selection.<br><br><strong>Request ID:</strong> ${requestId}`;
-    }
-
-    // Modified payment processing to handle existing ride requests
-    async function processServiceFeePayment(paymentMethod) {
-      const email = document.getElementById('paymentEmail').value.trim();
-      const phone = document.getElementById('paymentPhone').value.trim();
-
-      if (!email && !phone) {
-        showMessage('Please enter either email or phone number', 'error');
-        return;
-      }
-
-      // Check if this payment is for an existing ride request
-      const pendingRidePayment = localStorage.getItem('pendingRidePayment');
-      const isForRide = !!pendingRidePayment;
-      let rideData = null;
-
-      if (isForRide) {
-        rideData = JSON.parse(pendingRidePayment);
-        console.log('🚗 Processing service fee payment for existing ride:', rideData.requestId);
-      }
-
-      try {
-        const response = await fetch(`${API_BASE}/payments/create-service-fee`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            email,
-            phone,
-            paymentMethod,
-            isForRide: isForRide,
-            requestId: rideData?.requestId // Send requestId if this is for a ride
-          })
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-          if (email) localStorage.setItem('userEmail', email);
-          if (phone) localStorage.setItem('userPhone', phone);
-
-          // Add a flag to identify this as ride payment
-          if (isForRide) {
-            localStorage.setItem('paymentForExistingRide', 'true');
-            localStorage.setItem('paymentRequestId', rideData.requestId);
-          }
-
-          if (paymentMethod === 'stripe') {
-            window.location.href = data.data.checkoutUrl;
-          } else {
-            window.location.href = data.data.approvalUrl;
-          }
-        } else {
-          showMessage(`Payment creation failed: ${data.message}`, 'error');
-        }
-      } catch (error) {
-        console.error('Payment error:', error);
-        showMessage('Payment processing failed. Please try again.', 'error');
-      }
-    }
 
     // Message functions
     function showMessage(text, type) {
@@ -1051,50 +790,28 @@
       }
     }
 
-    // Handle payment success - Modified for new ride flow
+    // Handle payment success - Redirect to driver selection
     function handlePaymentSuccess() {
       const urlParams = new URLSearchParams(window.location.search);
       const paymentForExistingRide = localStorage.getItem('paymentForExistingRide');
       const paymentRequestId = localStorage.getItem('paymentRequestId');
 
       if (urlParams.get('payment') === 'success') {
-        showMessage('Payment successful! 1 credit has been added to your account.', 'success');
-
         if (paymentForExistingRide === 'true' && paymentRequestId) {
-          // Payment was for an existing ride - redirect to drivers page with timer
-          setTimeout(async () => {
-            await loadUserCredits(); // Refresh credits
-            localStorage.removeItem('pendingRidePayment');
-            localStorage.removeItem('paymentForExistingRide');
+          showMessage('Payment successful! Redirecting to driver selection...', 'success');
 
-            showMessage('Payment complete! Now starting driver selection timer...', 'success');
+          // Clean up localStorage
+          localStorage.removeItem('pendingRidePayment');
+          localStorage.removeItem('paymentForExistingRide');
 
-            // Start timer for the existing ride request
-            try {
-              const response = await fetch(`${API_BASE}/rides/${paymentRequestId}/start-timer`, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json'
-                }
-              });
-
-              const result = await response.json();
-              if (result.success) {
-                console.log('✅ Timer started for existing ride request');
-              }
-            } catch (error) {
-              console.error('Error starting timer:', error);
-            }
-
-            // Redirect to drivers page
-            setTimeout(() => {
-              window.location.href = `drivers.html?requestId=${paymentRequestId}`;
-            }, 2000);
+          // Redirect to drivers page
+          setTimeout(() => {
+            window.location.href = `drivers.html?requestId=${paymentRequestId}`;
           }, 2000);
         } else {
-          // Regular credit purchase
+          // Shouldn't happen in new flow, but handle gracefully
+          showMessage('Payment successful!', 'success');
           setTimeout(() => {
-            loadUserCredits();
             localStorage.removeItem('paymentRequestId');
             window.history.replaceState({}, document.title, window.location.pathname);
           }, 2000);

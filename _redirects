@@ -1,0 +1,12 @@
+# Netlify redirects file for SPA routing
+
+# Specific page routes
+/payment              /payment.html           200
+/payment-success      /payment-success.html   200
+/driver-portal        /driver-portal.html     200
+/driver-dashboard     /driver-dashboard.html  200
+/drivers              /drivers.html           200
+/chat                 /chat.html              200
+
+# Fallback to index.html for any other routes
+/*                    /index.html             200
