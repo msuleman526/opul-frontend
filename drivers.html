@@ -498,29 +498,21 @@
       await loadRideDetails();
 
       // Give some time for payment to be processed in backend
-      showStatusMessage('Payment completed! Refreshing your credit balance...', 'success');
+      showStatusMessage('Payment completed! Loading driver offers...', 'success');
 
-      // Wait 2 seconds, then refresh credits
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Wait 1 second for backend to process
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
-      // Force refresh credits (user just paid)
-      await checkUserCredits();
+      // Load driver offers directly (don't wait for credit check)
+      await loadDriverOffers();
 
-      if (userCredits >= 1) {
-        // User has credits now - show driver offers with timer
-        showStatusMessage('Credit updated! Loading driver offers...', 'success');
-        await loadDriverOffers();
-        await checkExistingTimer();
-        // Start timer immediately after payment completion
-        await startDriverSelectionTimerIfNeeded();
-      } else {
-        // Still no credits - something went wrong
-        showStatusMessage('Payment processed but credits not updated yet. Please refresh the page in a moment.', 'error');
-        // Still show payment options as fallback
-        setTimeout(() => {
-          showPaymentRequired();
-        }, 3000);
-      }
+      // Hide the payment required section and show offers
+      hidePaymentRequired();
+
+      // Hide status message after showing offers
+      setTimeout(() => {
+        document.getElementById('statusMessage').style.display = 'none';
+      }, 2000);
 
       // Hide loading indicator
       document.getElementById('loadingIndicator').style.display = 'none';
@@ -891,11 +883,7 @@
       console.log('🎯 displayDriverOffers called');
       console.log('- currentOffers:', currentOffers);
       console.log('- userCredits:', userCredits);
-      console.log('- hasCheckedCredits:', hasCheckedCredits);
-      console.log('- isTimerActive:', isTimerActive);
-      console.log('- rideData.status:', rideData?.status);
-
-      // Show offers - credit check is now handled in initialization
+      console.log('- paymentCompleted:', paymentCompleted);
 
       // Show the grid and refresh button
       grid.style.display = 'grid';
@@ -923,12 +911,6 @@
         const driverCard = createDriverCard(offer);
         grid.appendChild(driverCard);
       });
-
-      // Start timer when offers are displayed (if not already active)
-      if (!isTimerActive && userCredits >= 1) {
-        console.log('📅 Offers displayed - starting selection timer');
-        startDriverSelectionTimerIfNeeded();
-      }
     }
 
     function createDriverCard(offer) {
@@ -971,48 +953,7 @@
 
     async function acceptDriver(driverId) {
       try {
-        console.log('🚗 User trying to accept driver:', driverId);
-        showStatusMessage('Checking credits and accepting driver...', 'info');
-
-        // STEP 1: Check user credits FIRST (this is where credit check happens)
-        console.log('💳 Checking if user has credits for driver selection...');
-        await loadUserCredits();
-
-        if (userCredits >= 1) {
-          // STEP 2A: User has credits - Start timer and accept driver
-          console.log('✅ User has', userCredits, 'credits - proceeding with driver acceptance');
-          await startTimerAndAcceptDriver(driverId);
-        } else {
-          // STEP 2B: User has 0 credits - Show payment modal
-          console.log('⚠️ User has 0 credits - showing payment modal');
-          showPaymentRequiredForDriverAcceptance(driverId);
-        }
-      } catch (error) {
-        console.error('Error in acceptDriver flow:', error);
-        showStatusMessage(`Error: ${error.message}`, 'error');
-      }
-    }
-
-    function showPaymentRequiredForDriverAcceptance(driverId) {
-      console.log('💳 Showing payment modal for driver acceptance');
-
-      // Store the driver ID for after payment
-      localStorage.setItem('pendingDriverAcceptance', driverId);
-      localStorage.setItem('pendingRequestId', requestId);
-
-      // Show the payment modal
-      document.getElementById('paymentRequired').style.display = 'block';
-      document.getElementById('statusMessage').style.display = 'none';
-      document.getElementById('driversGrid').style.display = 'none';
-      document.getElementById('noOffers').style.display = 'none';
-      document.querySelector('.refresh-button').style.display = 'none';
-    }
-
-    async function startTimerAndAcceptDriver(driverId) {
-      console.log('🚗 Accepting driver (timer should already be running):', driverId);
-
-      try {
-        // Accept the driver (timer should already be active)
+        console.log('🚗 Accepting driver:', driverId);
         showStatusMessage('Accepting driver...', 'info');
 
         const response = await fetch(`${API_BASE}/rides/${requestId}/accept/${driverId}`, {
@@ -1025,12 +966,7 @@
         const data = await response.json();
 
         if (data.success) {
-          showStatusMessage('Driver accepted! Credit deducted. Redirecting to chat...', 'success');
-
-          // Stop timer
-          clearInterval(timerInterval);
-          isTimerActive = false;
-          document.getElementById('timerSection').style.display = 'none';
+          showStatusMessage('Driver accepted! Redirecting to chat...', 'success');
 
           // Disable all accept buttons
           const buttons = document.querySelectorAll('.accept-button');
@@ -1039,12 +975,12 @@
             btn.textContent = '✓ Driver Accepted';
           });
 
-          // Redirect to chat page after 2 seconds
+          // Redirect to chat page after 1.5 seconds
           setTimeout(() => {
             window.location.href = `Chat.html?requestId=${requestId}&userType=client`;
-          }, 2000);
+          }, 1500);
         } else {
-          throw new Error(data.message);
+          throw new Error(data.message || 'Failed to accept driver');
         }
       } catch (error) {
         console.error('Error accepting driver:', error);
@@ -1052,36 +988,6 @@
       }
     }
 
-    // Load user credits function (used during driver acceptance)
-    async function loadUserCredits() {
-      if (!rideData || !rideData.clientInfo) {
-        throw new Error('No client info available for credit check');
-      }
-
-      try {
-        const params = new URLSearchParams();
-        if (rideData.clientInfo.email) params.append('email', rideData.clientInfo.email);
-        if (rideData.clientInfo.phone) params.append('phone', rideData.clientInfo.phone);
-
-        console.log('🚀 Loading user credits for driver acceptance...');
-
-        const response = await fetch(`${API_BASE}/credits?${params}`);
-        const data = await response.json();
-
-        if (data.success) {
-          userCredits = data.data.totalCredits;
-          document.getElementById('currentCredits').textContent = userCredits;
-          console.log('💰 User has', userCredits, 'credits');
-          return userCredits;
-        } else {
-          throw new Error(data.message || 'Failed to load credits');
-        }
-      } catch (error) {
-        console.error('Error loading credits:', error);
-        userCredits = 0;
-        return 0;
-      }
-    }
 
     async function checkPaymentAndRefresh() {
       showStatusMessage('Checking payment status...', 'info');

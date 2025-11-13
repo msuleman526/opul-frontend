@@ -796,16 +796,17 @@
 
       if (urlParams.get('payment') === 'success') {
         if (paymentForExistingRide === 'true' && paymentRequestId) {
+          showRoleSelection(); // Hide the form
           showMessage('Payment successful! Redirecting to driver selection...', 'success');
 
           // Clean up localStorage
           localStorage.removeItem('pendingRidePayment');
           localStorage.removeItem('paymentForExistingRide');
 
-          // Redirect to drivers page
+          // Redirect to drivers page with payment=completed flag
           setTimeout(() => {
-            window.location.href = `drivers.html?requestId=${paymentRequestId}`;
-          }, 2000);
+            window.location.href = `drivers.html?requestId=${paymentRequestId}&payment=completed`;
+          }, 1500);
         } else {
           // Shouldn't happen in new flow, but handle gracefully
           showMessage('Payment successful!', 'success');
